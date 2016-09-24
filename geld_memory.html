@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>
+     Geld Memory
+    </title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="memory.css" />
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  </head>
+<body>
+<h1>Münzenmemory</h1>
+<div id = "container"></div>
+    <script>
+
+    var images = [];
+
+// get images, place them in an array & randomize the order
+for (var i = 0; i < 8; i++) { 
+  var rand = Math.floor(Math.random() * (141230 - 141200 + 1) + 141200);
+  var img = "http://www.kenom.de/content/?action=image&amp;sourcepath=file:///opt/digiverso/kenom_viewer/data/3/media/record_DE-MUS-044822_kenom_"+rand +"/record_DE-MUS-044822_kenom_"+rand+"_vs.jpg&amp;width=300&amp;height=300&amp;rotate=0&amp;resolution=72&amp;thumbnail=true&amp;ignoreWatermark=true";
+  //console.log(img);
+  images.push(img);
+  images.push(img);
+}
+randomizeImages();
+
+// output images then hide them
+var output = "<ol>"; 
+for (var i = 0; i < 16; i++) { 
+  output += "<li>";
+  output += "<img src = '" + images[i] + "'/>";
+  output += "</li>";
+}
+output += "</ol>";
+document.getElementById("container").innerHTML = output;
+$("img").hide();
+
+var guess1 = "";
+var guess2 = "";
+var count = 0;
+
+$("li").click(function() {
+  if ((count < 2) &&  ($(this).children("img").hasClass("face-up")) === false) {
+    
+    // increment guess count, show image, mark it as face up
+    count++;
+    $(this).find("img").show();
+    $(this).find("img").addClass("face-up");
+    
+    //guess #1
+    if (count === 1 ) { 
+      guess1 = $(this).find("img").attr("src"); 
+    }   
+    
+    //guess #2
+    else { 
+      guess2 = $(this).find("img").attr("src"); 
+      
+      // since it's the 2nd guess check for match
+      if (guess1 === guess2) { 
+        console.log("match");
+        $("li").children("img[src='" + guess2 + "']").addClass("match");
+      } 
+      
+      // else it's a miss
+      else { 
+        console.log("miss");
+        setTimeout(function() {
+          $("img").not(".match").hide();
+          $("img").not(".match").removeClass("face-up");
+        }, 1000);
+      }
+      
+      // reset
+      count = 0; 
+      setTimeout(function() { console.clear(); }, 60000);      
+    }
+  }
+});
+
+// randomize array of images
+function randomizeImages(){
+  Array.prototype.randomize = function()
+  {
+    var i = this.length, j, temp;
+    while ( --i )
+    {
+      j = Math.floor( Math.random() * (i - 1) );
+      temp = this[i];
+      this[i] = this[j];
+      this[j] = temp;
+    }
+  };
+  
+  images.randomize();
+}
+        </script>
+    <div>
+        
+
+    
+    <form>
+        <input type="reset" value="Nochmal spielen" onClick="window.location.reload()">
+    
+    
+    </form>
+        
+        </div>
+   
+    
+</body>
+</html>
