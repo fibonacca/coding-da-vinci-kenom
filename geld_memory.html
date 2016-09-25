@@ -10,7 +10,23 @@
   </head>
 <body>
 <h1>Münzenmemory</h1>
+    <script>
+         
+   $.getJSON("03-result.json", function(material){
+        
+    
+  $.each( material, function( key, val ) {
+    // hier kommt, was wir damit machen wollen
+  });
+     
+    });
+     
+       
+     //console.log(info);   
+        
+   </script>
 <div id = "container"></div>
+    
     <script>
 
     var images = [];
@@ -41,7 +57,7 @@ var guess2 = "";
 var count = 0;
 
 $("li").click(function() {
-  if ((count < 2) &&  ($(this).children("img").hasClass("face-up")) === false) {
+  if ((count < 2) &&  ($(this).find("img").hasClass("face-up")) === false) {
     
     // increment guess count, show image, mark it as face up
     count++;
@@ -96,6 +112,17 @@ function randomizeImages(){
   images.randomize();
 }
         </script>
+    <script>
+$(document).ready(function(){
+    $("button").click(function(){
+        $.getJSON("https://github.com/fibonacca/code_davinci/blob/master/03-result.json", function(result){
+            $.each(result, function(i, field){
+                $("div").append(field + " ");
+            });
+        });
+    });
+});
+</script>
     <div>
         
 
