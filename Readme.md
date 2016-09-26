@@ -9,7 +9,7 @@ Die Metadaten zu gut 25000 Münzen und Geldscheinen liegen als einzelne LIDO-Dat
 Die Ideen reichen dabei von ja/nein-Entscheidungen auf einzelnen Datenfelden über Memory mit den zugehörigen Bilddaten zu einem Quartett.
 
 
-### Extraktion interessanter Felder
+### 01-kenom-reduce.sh: Extraktion interessanter Felder
 
 Die 25000 LIDO Dateien im Ordner »lido« werden zunächst zu einer großen XML Datei zusammengefügt und schön formatiert, damit sie schneller bearbeitbar und besser betrachtbar sind.
 
@@ -20,3 +20,19 @@ Ca 300MB XML insgesamt.
 xmllint benötigt knapp 1,5GB RAM für das Formatieren. Die Ein- und Ausgabedateien sind nicht Teil des Repositories.
 
 saxon benötigt etwa 2GB RAM für die XSL Transformation, xsltproc knapp 2,5GB.
+
+
+### 02-filter-münzen.sh: Nur Münzen behalten
+
+Es gibt Datensätze für vier Objektarten, davon gut 12500 Münzen.
+
+``
+╰─ grep "<type>" 01-result.xml | sort | uniq -c
+3613     <type>Banknote</type>
+3043     <type>Medaille</type>
+12521     <type>Münze</type>
+5678     <type>Münzfund</type>
+``
+
+Dieser Schritt verwirft alle nicht-Münzen.
+
