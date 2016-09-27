@@ -47,3 +47,25 @@ Die fehlenden Felder sind:
 ```python
 {'material': 12, 'weight': 11, 'image-back-path': 32, 'title': 30, 'location': 5145, 'diameter': 6787}
 ```
+
+
+### Weitere Schritte und Ideen
+
+* Export von mehr Datensätzen mit weniger Feldern
+* Extrahierte GND URLs für Orte auflösen und Koordinaten extrahieren
+* Prüfen, ob sich die Masse nicht für etliche Münzen noch extrahieren lässt. Sie scheint teilweise im Freitext aber nicht als Daten abgelegt zu sein. Z.B. record_DE-MUS-059418_kenom_163474.xml
+
+        <lido:objectMeasurementsWrap>
+          <lido:objectMeasurementsSet>
+            <lido:displayObjectMeasurements>Durchmesser: ca, 18,5 mm
+          Gewicht: 0,415 g</lido:displayObjectMeasurements>
+            <lido:objectMeasurements>
+              <lido:measurementsSet>
+                <lido:measurementType xml:lang="en">weight</lido:measurementType>
+                <lido:measurementType>Gewicht</lido:measurementType>
+                <lido:measurementUnit>g</lido:measurementUnit>
+                <lido:measurementValue>0.415</lido:measurementValue>
+              </lido:measurementsSet>
+            </lido:objectMeasurements>
+          </lido:objectMeasurementsSet>
+        </lido:objectMeasurementsWrap>
