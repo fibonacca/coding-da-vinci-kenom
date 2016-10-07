@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-from __future__ import with_statement
-
+import re
 import json
-
 import xml.etree.ElementTree as ET
 
 tree = ET.parse('02-result.xml')
 root = tree.getroot()
+recordStatistics = {}
 missing = {}
 
 def extractLocation(element):
@@ -14,6 +13,15 @@ def extractLocation(element):
 
 def checkField(element, fieldName):
 	field = element.find(fieldName)
+	
+	uri = element.findtext('uri')
+	owner = element.findtext('record-owner') + ' ' + re.sub('_kenom.*', '', re.sub('http://www.kenom.de/id/record_', '', uri))
+	if not owner in recordStatistics:
+		recordStatistics[owner] = {}
+	if not fieldName in recordStatistics[owner]:
+		recordStatistics[owner][fieldName] = 0
+	recordStatistics[owner][fieldName] = recordStatistics[owner][fieldName] + 1
+	
 	if field is None:
 		print("Feld " + fieldName + " fehlt")
 		if fieldName in missing:
@@ -25,12 +33,15 @@ def checkField(element, fieldName):
 
 
 def isXmlRecordComplete(element):
-	return checkField(element, 'title') and checkField(element, 'earliestDate') and checkField(element, 'material') and checkField(element, 'diameter') and checkField(element, 'weight') and checkField(element, 'location') and checkField(element, 'image-front-path') and checkField(element, 'image-back-path')
+	"""Überprüfen ohne Scheitern."""
+	checkField(element, 'orientation')
+	
+	"""Restliche Felder überprüfen und ggf Scheiterungsgrund sein."""
+	return checkField(element, 'uri') and checkField(element, 'title') and checkField(element, 'earliestDate') and checkField(element, 'material') and checkField(element, 'diameter') and checkField(element, 'weight') and checkField(element, 'location') and checkField(element, 'image-front-path') and checkField(element, 'image-back-path') and checkField(element, 'record-owner')
 
 
-	return isComplete
+records = []
 
-records = [];
 for xmlRecord in root:
 	record = {}
 	print("")
@@ -50,11 +61,27 @@ for xmlRecord in root:
 		record['location'] = extractLocation(xmlRecord.findall('location'))
 		record['front'] = xmlRecord.findtext('image-front-path')
 		record['back'] = xmlRecord.findtext('image-back-path')
-		if record['location'] != None:
-			records += [record]
-			print(json.dumps(record, sort_keys=True, indent=4, separators=(',', ': ')))
-		else:
-			print("Ohne Location")
+		record['owner'] = xmlRecord.findtext('record-owner')
+
+		records += [record]
+		print(json.dumps(record, sort_keys=True, indent=4, separators=(',', ': ')))
+		
+
+def printRecordStatistics(stats):
+	fields = ['uri', 'title', 'earliestDate', 'material', 'diameter', 'weight', 'orientation', 'location', 'image-front-path', 'image-back-path', 'record-owner']
+	
+	print('\t'.join(['owner'] + fields))
+	
+	for owner in stats:
+		row = stats[owner]
+		values = [owner]
+		for field in fields:
+			if field in row:
+				values += [str(row[field])]
+			else:
+				values += ['0']
+
+		print('\t'.join(values))
 
 print()
 print()
@@ -68,6 +95,10 @@ print(missing)
 # 492
 # Fehlende Felder:
 # {'material': 12, 'weight': 11, 'image-back-path': 32, 'title': 30, 'location': 5145, 'diameter': 6787}
+print("")
+print("Feldstatistik:")
+printRecordStatistics(recordStatistics)
+
 
 with open('03-result.json', 'w') as f:
 	json.dump(records, f, sort_keys=True, indent=4, separators=(',', ': '))

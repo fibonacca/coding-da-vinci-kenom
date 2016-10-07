@@ -121,6 +121,12 @@
 		</image-back-path>
 	</xsl:template>
 	
+	<xsl:template match="lido:administrativeMetadata/lido:recordWrap/lido:recordRights/lido:rightsHolder/lido:legalBodyName/lido:appellationValue">
+		<record-owner>
+			<xsl:value-of select="."/>
+		</record-owner>
+	</xsl:template>
+	
 	<xsl:template match="@*|node()">
 		<xsl:apply-templates select="@*|node()"/>
 	</xsl:template>

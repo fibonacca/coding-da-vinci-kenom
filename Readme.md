@@ -48,6 +48,8 @@ Die fehlenden Felder sind:
 {'material': 12, 'weight': 11, 'image-back-path': 32, 'title': 30, 'location': 5145, 'diameter': 6787}
 ```
 
+Die Auswertung in 03-result-feldstatistik.tsv gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
+
 
 ### Weitere Schritte und Ideen
 
