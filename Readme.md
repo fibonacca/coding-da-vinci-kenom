@@ -38,14 +38,15 @@ Es gibt Datensätze für vier Objektarten, davon gut 12500 Münzen.
 
 Dieses Skript wandelt die XML Daten in das JSON Format um. Dabei werden nur die Datensätze behalten, für die alle Felder des Zielformats gefüllt werden können.
 
-Es bleiben nur 504 Münzen mit vollständigen Daten übrig.
+Es bleiben 504 Münzen mit vollständigen Daten in der Datei [03-result.json](blob/master/03-result.json) übrig.
 
-Die Auswertung in 03-result-feldstatistik.tsv gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
+Es bleiben 9959 Münzen mit weniger Daten, die nur die Felder `back, front, owner, title, uri` enthalten – geeignet für das Memory Spiel – in der Datei [03-result-memory.json](blob/master/03-result-memory.json) übrig.
+
+Die Auswertung in [03-result-feldstatistik.tsv](blob/master/03-result-feldstatistik.tsv) gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
 
 
 ### Weitere Schritte und Ideen
 
-* Export von mehr Datensätzen mit weniger Feldern
 * Extrahierte GND URLs für Orte auflösen und Koordinaten extrahieren
 * Prüfen, ob sich die Masse nicht für etliche Münzen noch extrahieren lässt. Sie scheint teilweise im Freitext aber nicht als Daten abgelegt zu sein. Z.B. record_DE-MUS-059418_kenom_163474.xml
 
