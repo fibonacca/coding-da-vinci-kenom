@@ -1,215 +1,42 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>
-     Geld Memory
-    </title>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="memory.css" />
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-   
-
-  </head>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Geld Memory</title>
+  <link rel="stylesheet" type="text/css" href="resources/memory.css"/>
+  <script src="resources/jquery/jquery-3.1.1.min.js"></script>
+  <script src="resources/underscore/underscore-min.js"></script>
+  <script src="resources/memory.js"></script>
+</head>
 <body>
 
-    <script>
-        
-        function getBoardsize(){
-         return   $(".sizeSelection").val();
-        }
-        
-        
-        
-        
-        function prepareImages(coins, boardSize)
-        {
-            coins.randomize();
-            var selectedCoins = coins.slice(0,boardSize);
-            var images = [];
-            for (var i = 0; i < boardSize/2; i++) { 
-                
-                var coin = selectedCoins[i];
-                var img = "http://www.kenom.de/content/?action=image&amp;sourcepath=file:///opt/digiverso/kenom_viewer/data/3/media/" + coin.front.replace("_media", "")  +"&amp;width=300&amp;height=300&amp;rotate=0&amp;resolution=72&amp;thumbnail=true&amp;ignoreWatermark=true";
-  
-              images.push(img);
-              images.push(img);
-                
-            }
-            images.randomize();
-            return images;
-        }
-        
-        
-        var coins = [];    
-   $.getJSON("03-result-memory.json", function(data){
-        
-   coins = data;
- fillBoard(prepareImages(coins, getBoardsize()));
-    });
-     
+  <ol id="gameBoard"></ol>
 
-
-// output images then hide them
-       function fillBoard(images) {
-           $('#container').empty();
-           
-           for (var i = 0; i < images.length; i++) { 
-                $('#container').append("<li>" + "<img src = '" + images[i] + "'/>" + "</li>");
-  
-            }
-           $("img").hide(); 
-        }
-
-        
-
-var guess1 = "";
-var guess2 = "";
-var count = 0;
-var countMatch = 0;        
-
-$(document).on("click", "li", function() {
-  if ((count < 2) &&  ($(this).find("img").hasClass("face-up")) === false) {
-    
-    // increment guess count, show image, mark it as face up
-    count++;
-    $(this).find("img").show();
-    $(this).find("img").addClass("face-up");
-    
-    //guess #1
-    if (count === 1 ) { 
-      guess1 = $(this).find("img").attr("src"); 
-    }   
-    
-    //guess #2
-    else { 
-      guess2 = $(this).find("img").attr("src"); 
-      
-      // since it's the 2nd guess check for match
-      if (guess1 === guess2) { 
-        console.log("match");
-        $("li").children("img[src='" + guess2 + "']").addClass("match");
-          countMatch ++;
-
-      }
-              
-                if(countMatch == 8){    //muss überarbeitet werden, etwas wie boardsize/2
-                   win();
-                   }
-    
-          
-           
-          
-      
-      
-      // else it's a miss
-      else { 
-        console.log("miss");
-        setTimeout(function() {
-          $("img").not(".match").hide();
-          $("img").not(".match").removeClass("face-up");
-        }, 1000);
-      }
-      
-        
-        // win
-        
-        function win(){
-            this.paused = true;
-			//setTimeout(function(){
-			//$("#container").hide();	
-            showModal();
-				
-			}
-        
-         function showModal(){
-             var modal = document.getElementById('myModal');
-             modal.style.display = "block";
-             var span = document.getElementsByClassName("close")[0];
-             
-             // When the user clicks on <span> (x), close the modal
-             span.onclick = function() {
-                 modal.style.display = "none";
-}
-             // $(".modal").show();
-                $(".resetButton").show();
-             
-            
-            }
-                       
-      // reset
-      count = 0; 
-      setTimeout(function() { console.clear(); }, 60000);      
-    }
-  }
-});
-        
-        $(document).on("click",".resetButton", function(){
-            fillBoard(prepareImages(coins, getBoardsize()));
-            $("#container").show();
-            $(".modal").hide();
-            countMatch = 0;
-        });
-         $(document).on("change",".sizeSelection", function(){
-            fillBoard(prepareImages(coins, getBoardsize()));
-        });
-                       
-                       
-// randomize array of images
-
-  Array.prototype.randomize = function()
-  {
-    var i = this.length, j, temp;
-    while ( --i )
-    {
-      j = Math.floor( Math.random() * (i - 1) );
-      temp = this[i];
-      this[i] = this[j];
-      this[j] = temp;
-    }
-  };
-  
-       
-
-
-        </script>
-   <ol id = "container"></ol>
-    <div>
-        
-<div id="myModal" class="modal">
-
-  <!-- Modal content -->
-  <div class="modal-content">
-    <div class="modal-header">
-      <span class="close">×</span>
-      <h2>Congratulations!</h2>
-    </div>
-    <div class="modal-body">
-      <input type="reset" value="Nochmal spielen" class = "resetButton" >
-    </div>
+  <div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">×</span>
+        <h2>Congratulations!</h2>
+      </div>
+      <div class="modal-body">
+        <input type="reset" value="Nochmal spielen" class = "resetButton"/>
+      </div>
       <div class="modal-footer">
-   
-    
+      </div>
+    </div>
   </div>
 
-</div>
+  <form>
+    <label>
+      <p>Feldgröße auswählen</p>
+      <select class="sizeSelection">
+        <option value="16" selected="selected">16</option>
+        <option value="24">24</option>
+        <option value="32">32</option>
+      </select>
+    </label>
+  </form>
 
-    
-    <form>
-        
-    <p id = "selection"> Feldgröße auswählen</p>
-        <select class = "sizeSelection">
-        
-       
-        <option value = "16" selected> 16</option>
-        <option value = "24"> 24 </option>
-        <option value = "32"> 32 </option>
-        
-        </select> 
-    
-    </form>
-        
-        </div>
-   
-    
 </body>
 </html>
