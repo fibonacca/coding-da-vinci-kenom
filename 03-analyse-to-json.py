@@ -2,8 +2,10 @@
 import re
 import json
 import xml.etree.ElementTree as ET
+import functools
+import math
 
-tree = ET.parse('02-result.xml')
+tree = ET.parse('01-result.xml')
 root = tree.getroot()
 recordStatistics = {}
 missing = {}
@@ -15,30 +17,58 @@ def checkField(element, fieldName):
 	field = element.find(fieldName)
 	
 	uri = element.findtext('uri')
-	owner = element.findtext('record-owner') + ' ' + re.sub('_kenom.*', '', re.sub('http://www.kenom.de/id/record_', '', uri))
+	ownerID = re.sub('_kenom.*', '', re.sub('http://www.kenom.de/id/record_', '', uri))
+	owner = ownerID + ' ' + element.findtext('recordOwner')
 	if not owner in recordStatistics:
-		recordStatistics[owner] = {}
+		recordStatistics[owner] = {'complete': 0}
 	if not fieldName in recordStatistics[owner]:
 		recordStatistics[owner][fieldName] = 0
-	recordStatistics[owner][fieldName] = recordStatistics[owner][fieldName] + 1
 	
-	if field is None:
-		print("Feld " + fieldName + " fehlt")
-		if fieldName in missing:
-			missing[fieldName] = missing[fieldName] + 1
-		else:
-			missing[fieldName] = 1
-		return False
-	return True
+	valueToAdd = 1
+
+	typ = element.findtext(fieldName)
+	if fieldName == 'type' and typ != 'Münze':
+		valueToAdd = 0
+		print('falscher Typ: ' + str(element.findtext(fieldName)))
+	elif fieldName == 'complete':
+		"""Sonderbehandlung für nicht existierendes 'complete' Feld, der reine Aufruf zählt einen hoch"""
+		print('Vollständig')
+	elif field is None:
+		valueToAdd = 0
+		print('fehldendes Feld: ' + fieldName)
+	
+	recordStatistics[owner][fieldName] = recordStatistics[owner][fieldName] + valueToAdd
+		
+	return valueToAdd == 1
 
 
 def isXmlRecordComplete(element):
-	"""Überprüfen ohne Scheitern."""
+	"""Auf Relevanz prüfen und falls nicht relevant Prüfung abbrechen"""
+	result = True
+	result &= checkField(element, 'uri')
+	result &= checkField(element, 'recordOwner')
+	result &= checkField(element, 'type')
+	
+	if not result:
+		return False
+	
+	"""Überprüfen mit Einfluß auf das Ergebnis"""
+	result &= checkField(element, 'title')
+	result &= checkField(element, 'earliestDate')
+	result &= checkField(element, 'material')
+	result &= checkField(element, 'diameter')
+	result &= checkField(element, 'weight')
+	result &= checkField(element, 'location')
+	result &= checkField(element, 'imageFrontPath')
+	result &= checkField(element, 'imageBackPath')
+	
+	if result:
+		checkField(element, 'complete')
+	
+	"""Überprüfen ohne Einfluß auf das Ergebnis"""
 	checkField(element, 'orientation')
 	
-	"""Restliche Felder überprüfen und ggf Scheiterungsgrund sein."""
-	return checkField(element, 'uri') and checkField(element, 'title') and checkField(element, 'earliestDate') and checkField(element, 'material') and checkField(element, 'diameter') and checkField(element, 'weight') and checkField(element, 'location') and checkField(element, 'image-front-path') and checkField(element, 'image-back-path') and checkField(element, 'record-owner')
-
+	return result
 
 records = []
 
@@ -59,42 +89,37 @@ for xmlRecord in root:
 		record['weight'] = xmlRecord.findtext('weight')
 		#record['orientation'] = xmlRecord.findtext('orientation')
 		record['location'] = extractLocation(xmlRecord.findall('location'))
-		record['front'] = xmlRecord.findtext('image-front-path')
-		record['back'] = xmlRecord.findtext('image-back-path')
-		record['owner'] = xmlRecord.findtext('record-owner')
+		record['front'] = xmlRecord.findtext('imageFrontPath')
+		record['back'] = xmlRecord.findtext('imageBackPath')
+		record['owner'] = xmlRecord.findtext('recordOwner')
 
 		records += [record]
 		print(json.dumps(record, sort_keys=True, indent=4, separators=(',', ': ')))
 		
 
 def printRecordStatistics(stats):
-	fields = ['uri', 'title', 'earliestDate', 'material', 'diameter', 'weight', 'orientation', 'location', 'image-front-path', 'image-back-path', 'record-owner']
+	fields = ['uri', 'type', 'title', 'earliestDate', 'material', 'diameter', 'weight', 'orientation', 'location', 'imageFrontPath', 'imageBackPath', 'recordOwner']
 	
-	print('\t'.join(['owner'] + fields))
+	print('\t'.join(['owner'] + fields + ['complete', '%']))
 	
-	for owner in stats:
+	for owner in sorted(stats):
 		row = stats[owner]
-		values = [owner]
+		values = []
+		coinCount = row['type']
 		for field in fields:
+			value = 0
 			if field in row:
-				values += [str(row[field])]
-			else:
-				values += ['0']
-
+				value = row[field]
+			values += [str(value)]
+		
+		complete = row['complete']
+		values = [owner] + values + [str(complete), str(math.floor(100 * complete / max(coinCount, 1)))]
 		print('\t'.join(values))
 
 print()
 print()
 print("Anzahl der erfolgreich überführten Records")
 print(len(records))
-print("")
-print("Fehlende Felder:")
-print(missing)
-# Ergebnis: es fehlt sehr häufig etwas
-# Anzahl der erfolgreich überführten Records
-# 492
-# Fehlende Felder:
-# {'material': 12, 'weight': 11, 'image-back-path': 32, 'title': 30, 'location': 5145, 'diameter': 6787}
 print("")
 print("Feldstatistik:")
 printRecordStatistics(recordStatistics)

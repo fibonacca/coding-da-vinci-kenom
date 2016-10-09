@@ -22,7 +22,7 @@ xmllint benötigt knapp 1,5GB RAM für das Formatieren. Die Ein- und Ausgabedate
 saxon benötigt etwa 2GB RAM für die XSL Transformation, xsltproc knapp 2,5GB.
 
 
-### 02-filter-münzen.sh: Nur Münzen behalten
+### Objekttypen
 
 Es gibt Datensätze für vier Objektarten, davon gut 12500 Münzen.
 
@@ -34,19 +34,11 @@ Es gibt Datensätze für vier Objektarten, davon gut 12500 Münzen.
 5678     <type>Münzfund</type>
 ```
 
-Dieser Schritt verwirft alle nicht-Münzen.
-
 ### 03-analyse-to-json.py: Vollständige Datensätze finden und als JSON exportieren
 
 Dieses Skript wandelt die XML Daten in das JSON Format um. Dabei werden nur die Datensätze behalten, für die alle Felder des Zielformats gefüllt werden können.
 
-Es bleiben nur 492 Münzen mit vollständigen Daten übrig.
-
-Die fehlenden Felder sind:
-
-```python
-{'material': 12, 'weight': 11, 'image-back-path': 32, 'title': 30, 'location': 5145, 'diameter': 6787}
-```
+Es bleiben nur 504 Münzen mit vollständigen Daten übrig.
 
 Die Auswertung in 03-result-feldstatistik.tsv gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
 

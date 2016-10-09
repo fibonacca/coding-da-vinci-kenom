@@ -104,27 +104,27 @@
 	</xsl:template>
 	
 	<xsl:template match="lido:resourceSet[lido:resourcePerspective/lido:term/text() = 'front']">
-		<image-front-path>
+		<imageFrontPath>
 			<xsl:attribute name="copyright">
 				<xsl:value-of select="lido:rightsResource[.//lido:term/text() = 'copyright']//lido:appellationValue"/>
 			</xsl:attribute>
 			<xsl:value-of select=".//lido:resourceID[@lido:type = 'local']"/>
-		</image-front-path>
+		</imageFrontPath>
 	</xsl:template>
 	
 	<xsl:template match="lido:resourceSet[lido:resourcePerspective/lido:term/text() = 'back']">
-		<image-back-path>
+		<imageBackPath>
 			<xsl:attribute name="copyright">
 				<xsl:value-of select="lido:rightsResource[.//lido:term/text() = 'copyright']//lido:appellationValue"/>
 			</xsl:attribute>
 			<xsl:value-of select=".//lido:resourceID[@lido:type = 'local']"/>
-		</image-back-path>
+		</imageBackPath>
 	</xsl:template>
 	
 	<xsl:template match="lido:administrativeMetadata/lido:recordWrap/lido:recordRights/lido:rightsHolder/lido:legalBodyName/lido:appellationValue">
-		<record-owner>
+		<recordOwner>
 			<xsl:value-of select="."/>
-		</record-owner>
+		</recordOwner>
 	</xsl:template>
 	
 	<xsl:template match="@*|node()">
