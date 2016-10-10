@@ -43,6 +43,23 @@ def checkField(element, fieldName):
 	elif fieldName == 'complete':
 		"""Sonderbehandlung für nicht existierendes 'complete' Feld, der reine Aufruf zählt einen hoch"""
 		print('Vollständig')
+	elif fieldName == 'earliestDate':
+		yearString = element.findtext(fieldName)[0:4]
+		try:
+			year = int(yearString)
+		except ValueError:
+			valueToAdd = 0
+			print('ungültige Jahreszahl: ' + yearString)
+	elif fieldName == 'diameter':
+		diameterString = element.findtext(fieldName)
+		if diameterString != None:
+			try:
+				diameter = float(diameterString)
+			except ValueError:
+				valueToAdd = 0
+				print('ungültige Zahl für Durchmesser: ' + diameterString)
+		else:
+			valueToAdd = 0
 	elif field is None:
 		valueToAdd = 0
 		print('fehldendes Feld: ' + fieldName)
@@ -70,13 +87,13 @@ def computeCompleteness(element):
 	result &= checkField(element, 'title')
 	result &= checkField(element, 'imageFrontPath')
 	result &= checkField(element, 'imageBackPath')
+	result &= checkField(element, 'earliestDate')
 	
 	memoryComplete = result
 	if memoryComplete:
 		checkField(element, 'memoryComplete')
 		completenessResult = RecordQuality.memory
 	
-	result &= checkField(element, 'earliestDate')
 	result &= checkField(element, 'material')
 	result &= checkField(element, 'diameter')
 	result &= checkField(element, 'weight')
@@ -109,12 +126,13 @@ for xmlRecord in root:
 		record['title'] = xmlRecord.findtext('title')
 		record['front'] = xmlRecord.findtext('imageFrontPath')
 		record['back'] = xmlRecord.findtext('imageBackPath')
+		dateString = xmlRecord.findtext('earliestDate')[0:4]
+		record['date'] = int(dateString)
 		memoryRecords += [record.copy()]
 		
 		if completeness == RecordQuality.full:
-			record['date'] = xmlRecord.findtext('earliestDate')[0:4]
 			record['material'] = xmlRecord.findtext('material') # evtl mehrere
-			record['diameter'] = xmlRecord.findtext('diameter')
+			record['diameter'] = float(xmlRecord.findtext('diameter'))
 			record['weight'] = xmlRecord.findtext('weight')
 			#record['orientation'] = xmlRecord.findtext('orientation')
 			record['location'] = extractLocation(xmlRecord.findall('location'))

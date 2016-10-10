@@ -38,9 +38,9 @@ Es gibt Datensätze für vier Objektarten, davon gut 12500 Münzen.
 
 Dieses Skript wandelt die XML Daten in das JSON Format um. Dabei werden nur die Datensätze behalten, für die alle Felder des Zielformats gefüllt werden können.
 
-Es bleiben 504 Münzen mit vollständigen Daten in der Datei [03-result.json](blob/master/03-result.json) übrig.
+Es bleiben 482 Münzen mit vollständigen Daten in der Datei [03-result.json](blob/master/03-result.json) übrig.
 
-Es bleiben 9959 Münzen mit weniger Daten, die nur die Felder `back, front, owner, title, uri` enthalten – geeignet für das Memory Spiel – in der Datei [03-result-memory.json](blob/master/03-result-memory.json) übrig.
+Es bleiben 9353 Münzen mit weniger Daten, die nur die Felder `back, front, owner, title, date, uri` enthalten – geeignet für das Memory Spiel – in der Datei [03-result-memory.json](blob/master/03-result-memory.json) übrig.
 
 Die Auswertung in [03-result-feldstatistik.tsv](blob/master/03-result-feldstatistik.tsv) gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
 
