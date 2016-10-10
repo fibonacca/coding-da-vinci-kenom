@@ -98,7 +98,6 @@ $(function () {
 
   // win
   var win = function () {
-    this.paused = true;
     showModal();
   };
 
@@ -131,7 +130,7 @@ $(function () {
           countMatch++;
         }
 
-        if (countMatch === getNumberOfPairs) {
+        if (countMatch === getNumberOfPairs()) {
           win();
         }
 
