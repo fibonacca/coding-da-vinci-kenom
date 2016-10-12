@@ -44,6 +44,10 @@ Es bleiben 9353 Münzen mit weniger Daten, die nur die Felder `back, front, owne
 
 Die Auswertung in [03-result-feldstatistik.tsv](blob/master/03-result-feldstatistik.tsv) gibt Aufschluss darüber, welche Felder vermisst werden und wie die Lücken auf die verschiedenen Datenlieferanten verteilt sind.
 
+### 04-extract-years.py: Jahreszahlstatistik
+
+Einen Eindruck bekommen, wie die Münzen über die Jahrhunderte verteilt sind: Es gibt nicht zu jedem Jahrhundert gleichviele Münzen und viele sehr alte.
+
 
 ### Weitere Schritte und Ideen
 
