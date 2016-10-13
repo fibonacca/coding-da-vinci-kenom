@@ -23,5 +23,5 @@ for record in data:
 outputfile = open('04-results-years.tsv', 'w')
 outputfile.write('Jahrhundert\tAnzahl\n')
 for century in sorted(results):
-	outputfile.write(str(century) + '\t' + str(results[century]) + '\n')
+	outputfile.write(str(century + 1) + '\t' + str(results[century]) + '\n')
 outputfile.close()
