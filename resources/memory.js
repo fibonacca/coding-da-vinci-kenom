@@ -14,6 +14,7 @@ $(function () {
   var guess2 = '';
   var count = 0;
   var countMatch = 0;
+  var century = 0; 
 
   /**
    * Münzdaten (asynchron) laden.
@@ -34,6 +35,47 @@ $(function () {
     var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
     return prefix + coin.front.replace('_media', '');
   };
+    
+   
+    /**
+    *Ein Jahrhundert  ermitteln
+    */
+    var getCentury = function(year){
+        
+    
+        
+        if(year >=1 && year <=999){
+            century = 10;
+        }
+        
+        else if(year >=1000 && year <=1299){
+            century = 13;
+        }
+        
+        else if(year >=1300 && year <=1399){
+            century = 14;
+        }
+        
+        else if(year >=1400 && year <=1699){
+            century = 17;
+        }
+        
+        else if(year >=1700 && year <=1799){
+            century = 18;
+        }
+        
+        else if(year >=1800 && year <=1899){
+            century = 19;
+        }
+        else if (year >=1900 && year <=2099){
+            century = 20;
+        }
+        else{
+            century = 0;
+        }
+            
+            
+    }
 
   /**
    * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
@@ -54,6 +96,8 @@ $(function () {
         resolution: 72,
         thumbnail: true,
         ignoreWatermark: true,
+       
+         
       };
       var imageUrl = 'http://www.kenom.de/content/?' + $.param(imageParameters);
 
@@ -166,5 +210,12 @@ $(function () {
   $(document).on('change', '.sizeSelection', function () {
     fillBoard();
   });
-
+    
+    /**
+   * Click Event-Handler für das Jahrhundert-Auswahlmenü.
+   */
+    
+ $(document).on('change', '.centurySelection', function () {
+    fillBoard();
+  });
 });
