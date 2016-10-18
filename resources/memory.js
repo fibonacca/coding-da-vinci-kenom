@@ -1,11 +1,9 @@
-/**
- * global $, _
- */
+/*global $, _, document */
 $(function () {
   'use strict';
 
   // Die verfügbaren Bilder.
-  var imagePaths = [];
+  var imageData = [];
 
   var $gameBoard = $('#gameBoard');
 
@@ -14,13 +12,13 @@ $(function () {
   var guess2 = '';
   var count = 0;
   var countMatch = 0;
-  var century = 0; 
+  var century = 0;
 
   /**
    * Münzdaten (asynchron) laden.
    */
   $.getJSON('data/03-result-memory.json', function (data) {
-    imagePaths = data;
+    imageData = data;
     fillBoard();
   });
 
@@ -28,61 +26,32 @@ $(function () {
    * Brettgröße aus Auswahl im Menü ermittlen.
    */
   var getNumberOfPairs = function () {
-    return $('.sizeSelection').val() / 2;
+    return parseInt($('.sizeSelection').val(), 10) / 2;
   };
+
+  /**
+   * Filterfunktion für Münzdaten aus Auswahl im Menü ermitteln.
+   */
+  var getCenturyFilter = function () {
+      var range = JSON.parse($('.centurySelection').val());
+      return function (imageRecord) {
+        var year = imageRecord.date;
+        return range[0] <= year && year < range[1];
+      };
+  }
 
   var createCoinFrontSourcePath = function (coin) {
     var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
     return prefix + coin.front.replace('_media', '');
   };
-    
-   
-    /**
-    *Ein Jahrhundert  ermitteln
-    */
-    var getCentury = function(year){
-        
-    
-        
-        if(year >=1 && year <=999){
-            century = 10;
-        }
-        
-        else if(year >=1000 && year <=1299){
-            century = 13;
-        }
-        
-        else if(year >=1300 && year <=1399){
-            century = 14;
-        }
-        
-        else if(year >=1400 && year <=1699){
-            century = 17;
-        }
-        
-        else if(year >=1700 && year <=1799){
-            century = 18;
-        }
-        
-        else if(year >=1800 && year <=1899){
-            century = 19;
-        }
-        else if (year >=1900 && year <=2099){
-            century = 20;
-        }
-        else{
-            century = 0;
-        }
-            
-            
-    }
 
   /**
    * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
    */
   var createShuffledImageUrls = function () {
     var numberOfPairs = getNumberOfPairs();
-    var selectedCoins = _.sample(imagePaths, numberOfPairs);
+    var filteredCoins = _.filter(imageData, getCenturyFilter());
+    var selectedCoins = _.sample(filteredCoins, numberOfPairs);
     var imageUrls = [];
     for (var i = 0; i < numberOfPairs; i++) {
       var coin = selectedCoins[i];
@@ -96,8 +65,6 @@ $(function () {
         resolution: 72,
         thumbnail: true,
         ignoreWatermark: true,
-       
-         
       };
       var imageUrl = 'http://www.kenom.de/content/?' + $.param(imageParameters);
 
@@ -207,15 +174,8 @@ $(function () {
   /**
    * Click Event-Handler für das Spielfeld-Größenmenü.
    */
-  $(document).on('change', '.sizeSelection', function () {
+  $(document).on('change', '.sizeSelection, .centurySelection', function () {
     fillBoard();
   });
-    
-    /**
-   * Click Event-Handler für das Jahrhundert-Auswahlmenü.
-   */
-    
- $(document).on('change', '.centurySelection', function () {
-    fillBoard();
-  });
+
 });
