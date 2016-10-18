@@ -7,12 +7,15 @@ $(function () {
 
   var $gameBoard = $('#gameBoard');
 
+  // CSS-Klassen
+  var foundClass = 'found';
+  var peekClass = 'peek';
+  var timeoutClass = 'timeout';
+
+  var identifierDataAttributeName = 'identifier';
+
   // Spielstand
-  var guess1 = '';
-  var guess2 = '';
-  var count = 0;
-  var countMatch = 0;
-  var century = 0;
+  var moveCount = 0;
 
   /**
    * Münzdaten (asynchron) laden.
@@ -86,11 +89,9 @@ $(function () {
 
     // neue Bilder einfügen
     _.each(selectedImageUrls, function (imageUrl) {
-      $gameBoard.append('<li><img src="' + imageUrl + '"/></li>');
+        var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_vs.*/, '');
+        $gameBoard.append('<li data-' + identifierDataAttributeName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
     });
-
-    // Bild Tags unsichtbar machen
-    $gameBoard.find('img').hide();
   };
 
   var showModal = function () {
@@ -116,66 +117,70 @@ $(function () {
    * Click-Event Handler für die Auswahl von Kacheln.
    */
   $gameBoard.on('click', 'li', function (event) {
-    var $Target = $(event.target);
+    var $Target = $(event.currentTarget);
     var $Image = $Target.find('img');
 
-    if ((count < 2) && !$(this).find('img').hasClass('face-up')) {
+    // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
+    if ($Target.hasClass(foundClass) || $Target.hasClass(peekClass)) {
+        return;
+    }
 
-      // increment guess count, show image, mark it as face up
-      count++;
-      $Image.show().addClass('face-up');
+    moveCount += 1;
 
-      //guess #1
-      if (count === 1) {
-        guess1 = $Image.attr('src');
-      }
+    // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
+    var $oldPeek = $gameBoard.find('.' + peekClass);
+    if ($oldPeek.length > 1) {
+        $oldPeek
+            .removeClass(peekClass)
+            .removeClass(timeoutClass);
+    }
 
-      //guess #2
-      else {
-        guess2 = $Image.attr('src');
+    // Geklickte Karte aufdecken.
+    $Target.addClass(peekClass);
 
-        // since it's the 2nd guess check for match
-        if (guess1 === guess2) {
-          console.log('match');
-          $gameBoard.find('li img[src="' + guess2 + '"]').addClass('match');
-          countMatch++;
+    // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
+    var $newPeek = $gameBoard.find('.' + peekClass);
+    if ($newPeek.length === 2) {
+        if ($newPeek.first().data(identifierDataAttributeName) === $newPeek.last().data(identifierDataAttributeName)) {
+            $newPeek
+                .addClass(foundClass)
+                .removeClass(peekClass);
+        } else {
+            $newPeek.addClass(timeoutClass);
+            setTimeout(function () {
+                $newPeek
+                    .filter(function (index, element) {
+                        return $(element).hasClass(timeoutClass);
+                    })
+                    .removeClass(peekClass)
+                    .removeClass(timeoutClass);
+            }, 2000);
         }
+    }
 
-        if (countMatch === getNumberOfPairs()) {
-          win();
-        }
-
-        // else it's a miss
-        else {
-          console.log('miss');
-          setTimeout(function () {
-            $gameBoard.find('img:not(.match)')
-              .hide()
-              .removeClass('face-up');
-          }, 1000);
-        }
-
-        // reset
-        count = 0;
-      }
+    if ($gameBoard.find('.' + foundClass).length === getNumberOfPairs() * 2) {
+        win();
     }
   });
 
   /**
+   * Brett neu aufbauen und Spielstand zurücksetzen.
+   */
+  var resetGame = function () {
+      fillBoard();
+      $('#container').show();
+      $('.modal').hide();
+      moveCount = 0;
+  };
+
+  /**
    * Click Event-Handler für Reset-Knopf.
    */
-  $(document).on('click', '.resetButton', function () {
-    fillBoard();
-    $('#container').show();
-    $('.modal').hide();
-    countMatch = 0;
-  });
+  $(document).on('click', '.resetButton', resetGame);
 
   /**
    * Click Event-Handler für das Spielfeld-Größenmenü.
    */
-  $(document).on('change', '.sizeSelection, .centurySelection', function () {
-    fillBoard();
-  });
+  $(document).on('change', '.sizeSelection, .centurySelection', resetGame);
 
 });
