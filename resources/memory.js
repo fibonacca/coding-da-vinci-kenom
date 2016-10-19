@@ -113,6 +113,18 @@ $(function () {
     showModal();
   };
 
+  var updateClickCount = function (newCount) {
+      moveCount = newCount;
+      var jMoves = $('.moves');
+      if (moveCount === 0) {
+          jMoves.text('');
+      } else if (moveCount === 1) {
+          jMoves.text(' 1 Klick');
+      } else {
+          jMoves.text(moveCount + ' Klicks');
+      }
+  };
+
   /**
    * Click-Event Handler für die Auswahl von Kacheln.
    */
@@ -125,7 +137,7 @@ $(function () {
         return;
     }
 
-    moveCount += 1;
+    updateClickCount(moveCount + 1);
 
     // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
     var $oldPeek = $gameBoard.find('.' + peekClass);
@@ -170,7 +182,7 @@ $(function () {
       fillBoard();
       $('#container').show();
       $('.modal').hide();
-      moveCount = 0;
+      updateClickCount(0);
   };
 
   /**
