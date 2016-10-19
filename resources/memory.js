@@ -25,11 +25,16 @@ $(function () {
     fillBoard();
   });
 
+  var getDimensions = function () {
+      return JSON.parse($('.sizeSelection').val());
+  };
+
   /**
    * Brettgröße aus Auswahl im Menü ermittlen.
    */
   var getNumberOfPairs = function () {
-    return parseInt($('.sizeSelection').val(), 10) / 2;
+      var dimensions = getDimensions();
+      return dimensions[0] * dimensions[1] / 2;
   };
 
   /**
@@ -41,7 +46,7 @@ $(function () {
         var year = imageRecord.date;
         return range[0] <= year && year < range[1];
       };
-  }
+  };
 
   var createCoinFrontSourcePath = function (coin) {
     var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
