@@ -25,7 +25,10 @@ $(function () {
     fillBoard();
   });
 
-  var getDimensions = function () {
+  /**
+   * Die Anzahl der Memory-Karten auf dem Spielfeld.
+   */
+  var getBoardDimensions = function () {
       return JSON.parse($('.sizeSelection').val());
   };
 
@@ -33,7 +36,7 @@ $(function () {
    * Brettgröße aus Auswahl im Menü ermittlen.
    */
   var getNumberOfPairs = function () {
-      var dimensions = getDimensions();
+      var dimensions = getBoardDimensions();
       return dimensions[0] * dimensions[1] / 2;
   };
 
@@ -48,10 +51,43 @@ $(function () {
       };
   };
 
-  var createCoinFrontSourcePath = function (coin) {
-    var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
-    return prefix + coin.front.replace('_media', '');
-  };
+    /**
+     * Ist der schwierige Spielmodus, bei dem die Vorder- und
+     * Rückseite derselben Münze zusammengefunden werden müssen,
+     * aktiviert?
+     */
+    var isDifficult = function () {
+        return $('.difficult').prop('checked');
+    };
+
+    /**
+     * Pfad-URL zum Bild für die Münze.
+     * useBack: false/true -> Vorderseite/Rückseite
+     */
+    var createCoinSourcePath = function (coin, useBack) {
+        var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
+        var stringPart = useBack ? coin.back : coin.front;
+        return prefix + stringPart.replace('_media', '');
+    };
+
+    /**
+     * Erzeugt die vollständige Bild-URL für die gegebene
+     * Münze und Seite.
+     */
+    var createImageUrl = function (coin, useBack) {
+        var imageSize = 300;
+        var imageParameters = {
+            action: 'image',
+            sourcepath: createCoinSourcePath(coin, useBack),
+            width: 300,
+            height: 300,
+            rotate: 0,
+            resolution: 72,
+            thumbnail: true,
+            ignoreWatermark: true,
+        };
+        return 'http://www.kenom.de/content/?' + $.param(imageParameters);
+    };
 
   /**
    * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
@@ -61,23 +97,11 @@ $(function () {
     var filteredCoins = _.filter(imageData, getCenturyFilter());
     var selectedCoins = _.sample(filteredCoins, numberOfPairs);
     var imageUrls = [];
+    var useBack = isDifficult();
     for (var i = 0; i < numberOfPairs; i++) {
       var coin = selectedCoins[i];
-      var imageSize = 300;
-      var imageParameters = {
-        action: 'image',
-        sourcepath: createCoinFrontSourcePath(coin),
-        width: 300,
-        height: 300,
-        rotate: 0,
-        resolution: 72,
-        thumbnail: true,
-        ignoreWatermark: true,
-      };
-      var imageUrl = 'http://www.kenom.de/content/?' + $.param(imageParameters);
-
-      imageUrls.push(imageUrl);
-      imageUrls.push(imageUrl);
+      imageUrls.push(createImageUrl(coin, false));
+      imageUrls.push(createImageUrl(coin, useBack));
     }
 
     return _.sample(imageUrls, imageUrls.length);
@@ -94,7 +118,7 @@ $(function () {
 
     // neue Bilder einfügen
     _.each(selectedImageUrls, function (imageUrl) {
-        var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_vs.*/, '');
+        var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
         $gameBoard.append('<li data-' + identifierDataAttributeName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
     });
   };
@@ -193,7 +217,7 @@ $(function () {
   /**
    * Click Event-Handler für Reset-Knopf.
    */
-  $(document).on('click', '.resetButton', resetGame);
+  $(document).on('click', '.resetButton, .difficult', resetGame);
 
   /**
    * Click Event-Handler für das Spielfeld-Größenmenü.
