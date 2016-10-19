@@ -27,7 +27,14 @@ img {
     opacity: 0.3;
 }
 
+.control {
+    display: inline-block;
+    margin-right: 1em;
+}
 
+.moves {
+    display: inline-block;
+}
 
 .resetButton{
 	background-color: #1f4e5f;

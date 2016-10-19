@@ -1,56 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <title>Geld Memory</title>
-  <link rel="stylesheet" type="text/css" href="resources/memory.css"/>
-  <script src="resources/jquery/jquery-3.1.1.min.js"></script>
-  <script src="resources/underscore/underscore-min.js"></script>
-  <script src="resources/memory.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Geld Memory</title>
+    <link rel="stylesheet" type="text/css" href="resources/memory.css"/>
+    <script src="resources/jquery/jquery-3.1.1.min.js"></script>
+    <script src="resources/underscore/underscore-min.js"></script>
+    <script src="resources/memory.js"></script>
 </head>
 <body>
 
-  <ol id="gameBoard"></ol>
+    <ol id="gameBoard"></ol>
 
-  <div id="myModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">×</span>
-        <h2>Congratulations!</h2>
-      </div>
-      <div class="modal-body">
-        <input type="reset" value="Nochmal spielen" class = "resetButton"/>
-      </div>
-      <div class="modal-footer">
-      </div>
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">×</span>
+                <h2>Congratulations!</h2>
+            </div>
+            <div class="modal-body">
+                <input type="reset" value="Nochmal spielen" class = "resetButton"/>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="controls">
-    <label>
-      Größe:
-      <select class="sizeSelection">
-        <li><option value="16" selected="selected">16</option></li>
-        <li><option value="24">24</option></li>
-        <li><option value="32">32</option></li>
-      </select>
-    </label>
-    <label>
-      Jahrhundert:
-      <select class="centurySelection">
-        <option value="[-10000, 10000]" selected="selected">Alle</option>
-        <option value="[-10000, 0]">III - I  v.Chr.</option><
-        <option value="[0, 1000]">I-X n.Chr.</option>
-        <option value="[1000, 1300]">XI-XIII</option>
-        <option value="[1300, 1400]">XIV</option>
-        <option value="[1400, 1700]">XV-XVII</option>
-        <option value="[1700, 1800]">XVIII</option>
-        <option value="[1800, 1900]">XIX</option><
-        <option value="[1900, 2100]">XX - XXI</option>
-      </select>
-    </label>
-  </div>
+    <div class="controls">
+        <div class="control">
+            <label>
+                Größe:
+                <select class="sizeSelection">
+                    <option value="[4, 4]" selected="selected">16</option>
+                    <option value="[6, 4]">24</option>
+                    <option value="[6, 6]">36</option>
+                    <option value="[8, 6]">48</option>
+                </select>
+            </label>
+        </div>
+        <div class="control">
+            <label>
+                Jahrhundert:
+                <select class="centurySelection">
+                    <option value="[-10000, 10000]" selected="selected">Alle</option>
+                    <option value="[-10000, 0]">III - I  v.Chr.</option><
+                    <option value="[0, 1000]">I-X n.Chr.</option>
+                    <option value="[1000, 1300]">XI-XIII</option>
+                    <option value="[1300, 1400]">XIV</option>
+                    <option value="[1400, 1700]">XV-XVII</option>
+                    <option value="[1700, 1800]">XVIII</option>
+                    <option value="[1800, 1900]">XIX</option><
+                    <option value="[1900, 2100]">XX - XXI</option>
+                </select>
+            </label>
+        </div>
+        <div class="control">
+            <p class="moves"></p>
+        </div>
+    </div>
 
 </body>
 </html>
