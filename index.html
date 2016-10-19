@@ -26,36 +26,31 @@
       </div>
     </div>
   </div>
-<div >
-  <form>
-      
+
+  <div class="controls">
     <label>
-        <ul>
+      Größe:
       <select class="sizeSelection">
-          
-          <li><option value="16" selected="selected">16</option></li>
-          <li><option value="24">24</option></li>
-          <li><option value="32">32</option></li>
+        <li><option value="16" selected="selected">16</option></li>
+        <li><option value="24">24</option></li>
+        <li><option value="32">32</option></li>
       </select>
-            
-     <select class="centurySelection">
-      
-        <li><option value="0">III - I  v.Chr.</option></li>
-        <li><option value="10">I-X n.Chr.</option></li>
-        <li><option value="13">XI-XIII </option></li>
-        <li><option value="14" selected="selected">XIV </option></li>
-        <li><option value="17">XV-XVII </option></li>
-        <li><option value="18">XVIII </option></li>
-        <li><option value="19">XIX</option></li>
-        <li><option value="20">XX - XXI</option></li>
-    </select>
-         
-        </ul>
     </label>
-      
-  </form>
-    </div> 
-   
+    <label>
+      Jahrhundert:
+      <select class="centurySelection">
+        <option value="[-10000, 10000]" selected="selected">Alle</option>
+        <option value="[-10000, 0]">III - I  v.Chr.</option><
+        <option value="[0, 1000]">I-X n.Chr.</option>
+        <option value="[1000, 1300]">XI-XIII</option>
+        <option value="[1300, 1400]">XIV</option>
+        <option value="[1400, 1700]">XV-XVII</option>
+        <option value="[1700, 1800]">XVIII</option>
+        <option value="[1800, 1900]">XIX</option><
+        <option value="[1900, 2100]">XX - XXI</option>
+      </select>
+    </label>
+  </div>
 
 </body>
 </html>

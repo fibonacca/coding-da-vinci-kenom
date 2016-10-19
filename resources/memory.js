@@ -1,26 +1,27 @@
-/**
- * global $, _
- */
+/*global $, _, document */
 $(function () {
   'use strict';
 
   // Die verfügbaren Bilder.
-  var imagePaths = [];
+  var imageData = [];
 
   var $gameBoard = $('#gameBoard');
 
+  // CSS-Klassen
+  var foundClass = 'found';
+  var peekClass = 'peek';
+  var timeoutClass = 'timeout';
+
+  var identifierDataAttributeName = 'identifier';
+
   // Spielstand
-  var guess1 = '';
-  var guess2 = '';
-  var count = 0;
-  var countMatch = 0;
-  var century = 0; 
+  var moveCount = 0;
 
   /**
    * Münzdaten (asynchron) laden.
    */
   $.getJSON('data/03-result-memory.json', function (data) {
-    imagePaths = data;
+    imageData = data;
     fillBoard();
   });
 
@@ -28,61 +29,32 @@ $(function () {
    * Brettgröße aus Auswahl im Menü ermittlen.
    */
   var getNumberOfPairs = function () {
-    return $('.sizeSelection').val() / 2;
+    return parseInt($('.sizeSelection').val(), 10) / 2;
   };
+
+  /**
+   * Filterfunktion für Münzdaten aus Auswahl im Menü ermitteln.
+   */
+  var getCenturyFilter = function () {
+      var range = JSON.parse($('.centurySelection').val());
+      return function (imageRecord) {
+        var year = imageRecord.date;
+        return range[0] <= year && year < range[1];
+      };
+  }
 
   var createCoinFrontSourcePath = function (coin) {
     var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
     return prefix + coin.front.replace('_media', '');
   };
-    
-   
-    /**
-    *Ein Jahrhundert  ermitteln
-    */
-    var getCentury = function(year){
-        
-    
-        
-        if(year >=1 && year <=999){
-            century = 10;
-        }
-        
-        else if(year >=1000 && year <=1299){
-            century = 13;
-        }
-        
-        else if(year >=1300 && year <=1399){
-            century = 14;
-        }
-        
-        else if(year >=1400 && year <=1699){
-            century = 17;
-        }
-        
-        else if(year >=1700 && year <=1799){
-            century = 18;
-        }
-        
-        else if(year >=1800 && year <=1899){
-            century = 19;
-        }
-        else if (year >=1900 && year <=2099){
-            century = 20;
-        }
-        else{
-            century = 0;
-        }
-            
-            
-    }
 
   /**
    * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
    */
   var createShuffledImageUrls = function () {
     var numberOfPairs = getNumberOfPairs();
-    var selectedCoins = _.sample(imagePaths, numberOfPairs);
+    var filteredCoins = _.filter(imageData, getCenturyFilter());
+    var selectedCoins = _.sample(filteredCoins, numberOfPairs);
     var imageUrls = [];
     for (var i = 0; i < numberOfPairs; i++) {
       var coin = selectedCoins[i];
@@ -96,8 +68,6 @@ $(function () {
         resolution: 72,
         thumbnail: true,
         ignoreWatermark: true,
-       
-         
       };
       var imageUrl = 'http://www.kenom.de/content/?' + $.param(imageParameters);
 
@@ -119,11 +89,9 @@ $(function () {
 
     // neue Bilder einfügen
     _.each(selectedImageUrls, function (imageUrl) {
-      $gameBoard.append('<li><img src="' + imageUrl + '"/></li>');
+        var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_vs.*/, '');
+        $gameBoard.append('<li data-' + identifierDataAttributeName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
     });
-
-    // Bild Tags unsichtbar machen
-    $gameBoard.find('img').hide();
   };
 
   var showModal = function () {
@@ -149,73 +117,70 @@ $(function () {
    * Click-Event Handler für die Auswahl von Kacheln.
    */
   $gameBoard.on('click', 'li', function (event) {
-    var $Target = $(event.target);
+    var $Target = $(event.currentTarget);
     var $Image = $Target.find('img');
 
-    if ((count < 2) && !$(this).find('img').hasClass('face-up')) {
+    // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
+    if ($Target.hasClass(foundClass) || $Target.hasClass(peekClass)) {
+        return;
+    }
 
-      // increment guess count, show image, mark it as face up
-      count++;
-      $Image.show().addClass('face-up');
+    moveCount += 1;
 
-      //guess #1
-      if (count === 1) {
-        guess1 = $Image.attr('src');
-      }
+    // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
+    var $oldPeek = $gameBoard.find('.' + peekClass);
+    if ($oldPeek.length > 1) {
+        $oldPeek
+            .removeClass(peekClass)
+            .removeClass(timeoutClass);
+    }
 
-      //guess #2
-      else {
-        guess2 = $Image.attr('src');
+    // Geklickte Karte aufdecken.
+    $Target.addClass(peekClass);
 
-        // since it's the 2nd guess check for match
-        if (guess1 === guess2) {
-          console.log('match');
-          $gameBoard.find('li img[src="' + guess2 + '"]').addClass('match');
-          countMatch++;
+    // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
+    var $newPeek = $gameBoard.find('.' + peekClass);
+    if ($newPeek.length === 2) {
+        if ($newPeek.first().data(identifierDataAttributeName) === $newPeek.last().data(identifierDataAttributeName)) {
+            $newPeek
+                .addClass(foundClass)
+                .removeClass(peekClass);
+        } else {
+            $newPeek.addClass(timeoutClass);
+            setTimeout(function () {
+                $newPeek
+                    .filter(function (index, element) {
+                        return $(element).hasClass(timeoutClass);
+                    })
+                    .removeClass(peekClass)
+                    .removeClass(timeoutClass);
+            }, 2000);
         }
+    }
 
-        if (countMatch === getNumberOfPairs()) {
-          win();
-        }
-
-        // else it's a miss
-        else {
-          console.log('miss');
-          setTimeout(function () {
-            $gameBoard.find('img:not(.match)')
-              .hide()
-              .removeClass('face-up');
-          }, 1000);
-        }
-
-        // reset
-        count = 0;
-      }
+    if ($gameBoard.find('.' + foundClass).length === getNumberOfPairs() * 2) {
+        win();
     }
   });
 
   /**
+   * Brett neu aufbauen und Spielstand zurücksetzen.
+   */
+  var resetGame = function () {
+      fillBoard();
+      $('#container').show();
+      $('.modal').hide();
+      moveCount = 0;
+  };
+
+  /**
    * Click Event-Handler für Reset-Knopf.
    */
-  $(document).on('click', '.resetButton', function () {
-    fillBoard();
-    $('#container').show();
-    $('.modal').hide();
-    countMatch = 0;
-  });
+  $(document).on('click', '.resetButton', resetGame);
 
   /**
    * Click Event-Handler für das Spielfeld-Größenmenü.
    */
-  $(document).on('change', '.sizeSelection', function () {
-    fillBoard();
-  });
-    
-    /**
-   * Click Event-Handler für das Jahrhundert-Auswahlmenü.
-   */
-    
- $(document).on('change', '.centurySelection', function () {
-    fillBoard();
-  });
+  $(document).on('change', '.sizeSelection, .centurySelection', resetGame);
+
 });
