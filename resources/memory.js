@@ -14,15 +14,12 @@ $(function () {
 
   var identifierDataAttributeName = 'identifier';
 
-  // Spielstand
-  var moveCount = 0;
-
   /**
    * Münzdaten (asynchron) laden.
    */
   $.getJSON('data/03-result-memory.json', function (data) {
     imageData = data;
-    fillBoard();
+    resetGame();
   });
 
   /**
@@ -123,35 +120,56 @@ $(function () {
     });
   };
 
-  var showModal = function () {
-    var modal = document.getElementById('myModal');
-    modal.style.display = 'block';
-    var span = document.getElementsByClassName('close')[0];
+    var showModal = function () {
+        var modal = document.getElementById('myModal');
+        modal.style.display = 'block';
 
-    // When the user clicks on <span> (x), close the modal
-    $(span).on('click', function () {
-      modal.style.display = 'none';
-    });
+        // When the user clicks on <span> (x), close the modal
+        $('.close', modal).on('click', function () {
+            modal.style.display = 'none';
+        });
 
-    // $('.modal').show();
-    $('.resetButton').show();
-  };
+        var clicks = $gameBoard.data('moveCount');
+        var duration = Math.floor((new Date().getTime() - $('.timer').data('startTime').getTime()) / 1000);
+        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden'
+        $('.modal-footer .details').text(infoText);
 
-  // win
-  var win = function () {
-    showModal();
-  };
+        // $('.modal').show();
+        $('.resetButton').show();
+    };
 
-  var updateClickCount = function (newCount) {
-      moveCount = newCount;
-      var jMoves = $('.moves');
-      if (moveCount === 0) {
-          jMoves.text('');
-      } else if (moveCount === 1) {
-          jMoves.text(' 1 Klick');
-      } else {
-          jMoves.text(moveCount + ' Klicks');
-      }
+    // win
+    var win = function () {
+        var jTimer = $('.timer');
+        jTimer.empty();
+        var timerId = jTimer.data('timerId');
+        clearInterval(timerId);
+        showModal();
+    };
+
+    var updateClickCount = function (newCount) {
+        $gameBoard.data('moveCount', newCount);
+        var jMoves = $('.moves');
+        if (newCount === 0) {
+            jMoves.text('');
+        } else if (newCount === 1) {
+            jMoves.text(' 1 Klick');
+        } else {
+            jMoves.text(newCount + ' Klicks');
+        }
+
+        // Beim ersten Klick den Timer starten.
+        if (newCount === 1) {
+            var startTime = new Date();
+            var jTimer = $('.timer');
+            jTimer.data('startTime', startTime);
+            var timerId = setInterval(function () {
+                var currentTime = new Date();
+                var duration = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000)
+                jTimer.text(duration + 's');
+            } , 1000);
+            jTimer.data('timerId', timerId);
+        }
   };
 
   /**
@@ -166,7 +184,7 @@ $(function () {
         return;
     }
 
-    updateClickCount(moveCount + 1);
+    updateClickCount($gameBoard.data('moveCount') + 1);
 
     // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
     var $oldPeek = $gameBoard.find('.' + peekClass);
