@@ -72,6 +72,12 @@ Das Ergebnis ist eine Map mit ID → magic number Zuordnung und die Zählung:
 ```
 
 
+### 06-merge-data.py
+
+Führt die Daten aus den Schritten 3 und 5 zusammen und reduziert die Größe der Ausgabedatei.
+
+Das JSON der Ergebnisdatei ist nun knapp 3&nbsp;MB groß. Mit gzip Komprimierung schrumpft sie auf knapp 120&nbsp;KB.
+
 
 ### Weitere Schritte und Ideen
 
