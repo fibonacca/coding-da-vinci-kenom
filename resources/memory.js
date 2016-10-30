@@ -19,14 +19,6 @@ $(function () {
     var timerIdDataName = 'timerId';
 
     /**
-     * Münzdaten (asynchron) laden.
-     */
-    $.getJSON('data/03-result-memory.json', function (data) {
-        imageData = data;
-        resetGame();
-    });
-
-    /**
      * Die Anzahl der Memory-Karten auf dem Spielfeld.
      */
     var getBoardDimensions = function () {
@@ -80,12 +72,12 @@ $(function () {
         var imageParameters = {
             action: 'image',
             sourcepath: createCoinSourcePath(coin, useBack),
-            width: 300,
-            height: 300,
+            width: imageSize,
+            height: imageSize,
             rotate: 0,
             resolution: 72,
             thumbnail: true,
-            ignoreWatermark: true,
+            ignoreWatermark: true
         };
         return 'http://www.kenom.de/content/?' + $.param(imageParameters);
     };
@@ -97,13 +89,15 @@ $(function () {
         var numberOfPairs = getNumberOfPairs();
         var filteredCoins = _.filter(imageData, getCenturyFilter());
         var selectedCoins = _.sample(filteredCoins, numberOfPairs);
-        var imageUrls = [];
         var useBack = isDifficult();
-        for (var i = 0; i < numberOfPairs; i++) {
-            var coin = selectedCoins[i];
-            imageUrls.push(createImageUrl(coin, false));
-            imageUrls.push(createImageUrl(coin, useBack));
-        }
+        var imageUrls = _.flatten(
+            _.map(selectedCoins, function (coin) {
+                return [
+                    createImageUrl(coin, false),
+                    createImageUrl(coin, useBack)
+                ];
+            })
+        );
 
         return _.sample(imageUrls, imageUrls.length);
     };
@@ -135,9 +129,10 @@ $(function () {
 
         var clicks = $gameBoard.data(moveCountDataName);
         var duration = Math.floor(
-            (new Date().getTime() - $('.timer').data(startTimeDataName).getTime())
-            / 1000);
-        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden'
+            (Date.now() - $('.timer').data(startTimeDataName))
+            / 1000
+        );
+        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden';
         $('.modal-footer .details').text(infoText);
 
         $('.resetButton').show();
@@ -146,7 +141,7 @@ $(function () {
     var clearTimer = function () {
         clearInterval($gameBoard.data(timerIdDataName));
         $('.timer').empty();
-    }
+    };
 
     // win
     var win = function () {
@@ -167,14 +162,13 @@ $(function () {
 
         // Beim ersten Klick den Timer starten.
         if (newCount === 1) {
-            var startTime = new Date();
+            var startTime = Date.now();
             var jTimer = $('.timer');
             jTimer.data(startTimeDataName, startTime);
             var timerId = setInterval(function () {
-                var currentTime = new Date();
-                var duration = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000)
+                var duration = Math.floor((Date.now() - startTime) / 1000);
                 jTimer.text(duration + 's');
-            } , 1000);
+            }, 1000);
             $gameBoard.data(timerIdDataName, timerId);
         }
     };
@@ -183,11 +177,10 @@ $(function () {
      * Click-Event Handler für die Auswahl von Kacheln.
      */
     $gameBoard.on('click', 'li', function (event) {
-        var $Target = $(event.currentTarget);
-        var $Image = $Target.find('img');
+        var $target = $(event.currentTarget);
 
         // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
-        if ($Target.hasClass(foundClass) || $Target.hasClass(peekClass)) {
+        if ($target.hasClass(foundClass) || $target.hasClass(peekClass)) {
             return;
         }
 
@@ -197,29 +190,29 @@ $(function () {
         var $oldPeek = $gameBoard.find('.' + peekClass);
         if ($oldPeek.length > 1) {
             $oldPeek
-            .removeClass(peekClass)
-            .removeClass(timeoutClass);
+                .removeClass(peekClass)
+                .removeClass(timeoutClass);
         }
 
         // Geklickte Karte aufdecken.
-        $Target.addClass(peekClass);
+        $target.addClass(peekClass);
 
         // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
         var $newPeek = $gameBoard.find('.' + peekClass);
         if ($newPeek.length === 2) {
             if ($newPeek.first().data(identifierDataName) === $newPeek.last().data(identifierDataName)) {
                 $newPeek
-                .addClass(foundClass)
-                .removeClass(peekClass);
+                    .addClass(foundClass)
+                    .removeClass(peekClass);
             } else {
                 $newPeek.addClass(timeoutClass);
                 setTimeout(function () {
                     $newPeek
-                    .filter(function (index, element) {
-                        return $(element).hasClass(timeoutClass);
-                    })
-                    .removeClass(peekClass)
-                    .removeClass(timeoutClass);
+                        .filter(function (index, element) {
+                            return $(element).hasClass(timeoutClass);
+                        })
+                        .removeClass(peekClass)
+                        .removeClass(timeoutClass);
                 }, 2000);
             }
         }
@@ -249,5 +242,13 @@ $(function () {
      * Click Event-Handler für das Spielfeld-Größenmenü.
      */
     $(document).on('change', '.sizeSelection, .centurySelection', resetGame);
+
+    /**
+     * Münzdaten (asynchron) laden.
+     */
+    $.getJSON('data/03-result-memory.json', function (data) {
+        imageData = data;
+        resetGame();
+    });
 
 });
