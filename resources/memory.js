@@ -12,7 +12,11 @@ $(function () {
     var peekClass = 'peek';
     var timeoutClass = 'timeout';
 
-    var identifierDataAttributeName = 'identifier';
+    // Namen für Datenfelder and DOM-Elementen
+    var identifierDataName = 'identifier';
+    var moveCountDataName = 'moveCount';
+    var startTimeDataName = 'startTime';
+    var timerIdDataName = 'timerId';
 
     /**
      * Münzdaten (asynchron) laden.
@@ -116,7 +120,7 @@ $(function () {
         // neue Bilder einfügen
         _.each(selectedImageUrls, function (imageUrl) {
             var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
-            $gameBoard.append('<li data-' + identifierDataAttributeName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
+            $gameBoard.append('<li data-' + identifierDataName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
         });
     };
 
@@ -129,26 +133,29 @@ $(function () {
             modal.style.display = 'none';
         });
 
-        var clicks = $gameBoard.data('moveCount');
-        var duration = Math.floor((new Date().getTime() - $('.timer').data('startTime').getTime()) / 1000);
+        var clicks = $gameBoard.data(moveCountDataName);
+        var duration = Math.floor(
+            (new Date().getTime() - $('.timer').data(startTimeDataName).getTime())
+            / 1000);
         var infoText = clicks + ' Klicks in ' + duration + ' Sekunden'
         $('.modal-footer .details').text(infoText);
 
-        // $('.modal').show();
         $('.resetButton').show();
     };
 
+    var clearTimer = function () {
+        clearInterval($gameBoard.data(timerIdDataName));
+        $('.timer').empty();
+    }
+
     // win
     var win = function () {
-        var jTimer = $('.timer');
-        jTimer.empty();
-        var timerId = jTimer.data('timerId');
-        clearInterval(timerId);
+        clearTimer();
         showModal();
     };
 
     var updateClickCount = function (newCount) {
-        $gameBoard.data('moveCount', newCount);
+        $gameBoard.data(moveCountDataName, newCount);
         var jMoves = $('.moves');
         if (newCount === 0) {
             jMoves.text('');
@@ -162,13 +169,13 @@ $(function () {
         if (newCount === 1) {
             var startTime = new Date();
             var jTimer = $('.timer');
-            jTimer.data('startTime', startTime);
+            jTimer.data(startTimeDataName, startTime);
             var timerId = setInterval(function () {
                 var currentTime = new Date();
                 var duration = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000)
                 jTimer.text(duration + 's');
             } , 1000);
-            jTimer.data('timerId', timerId);
+            $gameBoard.data(timerIdDataName, timerId);
         }
     };
 
@@ -184,7 +191,7 @@ $(function () {
             return;
         }
 
-        updateClickCount($gameBoard.data('moveCount') + 1);
+        updateClickCount($gameBoard.data(moveCountDataName) + 1);
 
         // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
         var $oldPeek = $gameBoard.find('.' + peekClass);
@@ -200,7 +207,7 @@ $(function () {
         // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
         var $newPeek = $gameBoard.find('.' + peekClass);
         if ($newPeek.length === 2) {
-            if ($newPeek.first().data(identifierDataAttributeName) === $newPeek.last().data(identifierDataAttributeName)) {
+            if ($newPeek.first().data(identifierDataName) === $newPeek.last().data(identifierDataName)) {
                 $newPeek
                 .addClass(foundClass)
                 .removeClass(peekClass);
@@ -230,6 +237,7 @@ $(function () {
         $('#container').show();
         $('.modal').hide();
         updateClickCount(0);
+        clearTimer();
     };
 
     /**
