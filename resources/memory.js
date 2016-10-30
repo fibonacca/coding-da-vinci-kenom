@@ -39,7 +39,7 @@ $(function () {
     var getCenturyFilter = function () {
         var range = JSON.parse($('.centurySelection').val());
         return function (imageRecord) {
-            var year = imageRecord.date;
+            var year = imageRecord.year;
             return range[0] <= year && year < range[1];
         };
     };
@@ -58,9 +58,11 @@ $(function () {
      * useBack: false/true -> Vorderseite/Rückseite
      */
     var createCoinSourcePath = function (coin, useBack) {
-        var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
-        var stringPart = useBack ? coin.back : coin.front;
-        return prefix + stringPart.replace('_media', '');
+        var prefix = 'file:///opt/digiverso/kenom_viewer/data/' + coin.magic + '/media/';
+        var folderName = 'record_' + coin.id;
+        var sideSuffix = useBack ? '_rs' : '_vs';
+        var fileName = folderName + sideSuffix + '.jpg';
+        return prefix + folderName + '/' + fileName;
     };
 
     /**
@@ -246,7 +248,7 @@ $(function () {
     /**
      * Münzdaten (asynchron) laden.
      */
-    $.getJSON('data/03-result-memory.json', function (data) {
+    $.getJSON('analyse/06-result-memory.json', function (data) {
         imageData = data;
         resetGame();
     });
