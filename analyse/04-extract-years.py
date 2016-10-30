@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 import json
 
-import re
-import xml.etree.ElementTree as ET
-import functools
-import math
-from enum import Enum
-
 inputfile = open('03-result-memory.json')
 data = json.load(inputfile)
 inputfile.close()
