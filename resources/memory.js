@@ -1,52 +1,47 @@
-/*global $, _, document */
+/*global $, _, document, window */
 $(function () {
-  'use strict';
+    'use strict';
 
-  // Die verfügbaren Bilder.
-  var imageData = [];
+    // Die verfügbaren Bilder.
+    var imageData = [];
 
-  var $gameBoard = $('#gameBoard');
+    var $gameBoard = $('#gameBoard');
 
-  // CSS-Klassen
-  var foundClass = 'found';
-  var peekClass = 'peek';
-  var timeoutClass = 'timeout';
+    // CSS-Klassen
+    var foundClass = 'found';
+    var peekClass = 'peek';
+    var timeoutClass = 'timeout';
 
-  var identifierDataAttributeName = 'identifier';
+    // Namen für Datenfelder and DOM-Elementen
+    var identifierDataName = 'identifier';
+    var moveCountDataName = 'moveCount';
+    var startTimeDataName = 'startTime';
+    var timerIdDataName = 'timerId';
 
-  /**
-   * Münzdaten (asynchron) laden.
-   */
-  $.getJSON('data/03-result-memory.json', function (data) {
-    imageData = data;
-    resetGame();
-  });
+    /**
+     * Die Anzahl der Memory-Karten auf dem Spielfeld.
+     */
+    var getBoardDimensions = function () {
+        return JSON.parse($('.sizeSelection').val());
+    };
 
-  /**
-   * Die Anzahl der Memory-Karten auf dem Spielfeld.
-   */
-  var getBoardDimensions = function () {
-      return JSON.parse($('.sizeSelection').val());
-  };
+    /**
+     * Brettgröße aus Auswahl im Menü ermittlen.
+     */
+    var getNumberOfPairs = function (boardDimensions) {
+        return boardDimensions[0] * boardDimensions[1] / 2;
+    };
 
-  /**
-   * Brettgröße aus Auswahl im Menü ermittlen.
-   */
-  var getNumberOfPairs = function () {
-      var dimensions = getBoardDimensions();
-      return dimensions[0] * dimensions[1] / 2;
-  };
-
-  /**
-   * Filterfunktion für Münzdaten aus Auswahl im Menü ermitteln.
-   */
-  var getCenturyFilter = function () {
-      var range = JSON.parse($('.centurySelection').val());
-      return function (imageRecord) {
-        var year = imageRecord.date;
-        return range[0] <= year && year < range[1];
-      };
-  };
+    /**
+     * Filterfunktion für Münzdaten aus Auswahl im Menü ermitteln.
+     */
+    var getCenturyFilter = function () {
+        var range = JSON.parse($('.centurySelection').val());
+        return function (imageRecord) {
+            var year = imageRecord.year;
+            return range[0] <= year && year < range[1];
+        };
+    };
 
     /**
      * Ist der schwierige Spielmodus, bei dem die Vorder- und
@@ -62,9 +57,11 @@ $(function () {
      * useBack: false/true -> Vorderseite/Rückseite
      */
     var createCoinSourcePath = function (coin, useBack) {
-        var prefix = 'file:///opt/digiverso/kenom_viewer/data/3/media/';
-        var stringPart = useBack ? coin.back : coin.front;
-        return prefix + stringPart.replace('_media', '');
+        var prefix = 'file:///opt/digiverso/kenom_viewer/data/' + coin.magic + '/media/';
+        var folderName = 'record_' + coin.id;
+        var sideSuffix = useBack ? '_rs' : '_vs';
+        var fileName = folderName + sideSuffix + '.jpg';
+        return prefix + folderName + '/' + fileName;
     };
 
     /**
@@ -76,49 +73,77 @@ $(function () {
         var imageParameters = {
             action: 'image',
             sourcepath: createCoinSourcePath(coin, useBack),
-            width: 300,
-            height: 300,
+            width: imageSize,
+            height: imageSize,
             rotate: 0,
             resolution: 72,
             thumbnail: true,
-            ignoreWatermark: true,
+            ignoreWatermark: true
         };
         return 'http://www.kenom.de/content/?' + $.param(imageParameters);
     };
 
-  /**
-   * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
-   */
-  var createShuffledImageUrls = function () {
-    var numberOfPairs = getNumberOfPairs();
-    var filteredCoins = _.filter(imageData, getCenturyFilter());
-    var selectedCoins = _.sample(filteredCoins, numberOfPairs);
-    var imageUrls = [];
-    var useBack = isDifficult();
-    for (var i = 0; i < numberOfPairs; i++) {
-      var coin = selectedCoins[i];
-      imageUrls.push(createImageUrl(coin, false));
-      imageUrls.push(createImageUrl(coin, useBack));
-    }
+    /**
+     * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
+     */
+    var createShuffledImageUrls = function (boardDimensions) {
+        var numberOfPairs = getNumberOfPairs(boardDimensions);
+        var filteredCoins = _.filter(imageData, getCenturyFilter());
+        var selectedCoins = _.sample(filteredCoins, numberOfPairs);
+        var useBack = isDifficult();
+        var imageUrls = _.flatten(
+            _.map(selectedCoins, function (coin) {
+                return [
+                    createImageUrl(coin, false),
+                    createImageUrl(coin, useBack)
+                ];
+            })
+        );
 
-    return _.sample(imageUrls, imageUrls.length);
-  };
+        return _.sample(imageUrls, imageUrls.length);
+    };
 
-  /**
-   * Frisches Spielfeld mit den übergebenen Bildern erzeugen.
-   */
-  var fillBoard = function () {
-    var selectedImageUrls = createShuffledImageUrls();
+    var setBoardSize = function ($board, boardDimensions) {
+        $board.removeClass();
 
-    // alte Bilder löschen
-    $gameBoard.empty();
+        var w = window.innerWidth;
+        var h = window.innerHeight - 50;
+        var ratio = w / h;
 
-    // neue Bilder einfügen
-    _.each(selectedImageUrls, function (imageUrl) {
-        var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
-        $gameBoard.append('<li data-' + identifierDataAttributeName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
-    });
-  };
+        var columnCount = ratio > 1 ? boardDimensions[0] : boardDimensions[1];
+
+        $board.addClass('columns-' + columnCount);
+        $board.css({
+            width: w - 25
+        });
+    };
+
+    /**
+     * Frisches Spielfeld mit den übergebenen Bildern erzeugen.
+     */
+    var fillBoard = function () {
+        var boardDimensions = getBoardDimensions();
+        var selectedImageUrls = createShuffledImageUrls(boardDimensions);
+
+        // alte Bilder löschen
+        $gameBoard.empty();
+        setBoardSize($gameBoard, boardDimensions);
+
+        // neue Bilder einfügen
+        _.each(selectedImageUrls, function (imageUrl) {
+            var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
+            var li = document.createElement('li');
+            li.setAttribute('data-' + identifierDataName, identifiyingString);
+            li.setAttribute('class', 'cell');
+
+            var img = document.createElement('img');
+            img.setAttribute('src', imageUrl);
+            img.setAttribute('alt', 'Spielstein');
+            li.appendChild(img);
+
+            $gameBoard.append(li);
+        });
+    };
 
     var showModal = function () {
         var modal = document.getElementById('myModal');
@@ -129,26 +154,30 @@ $(function () {
             modal.style.display = 'none';
         });
 
-        var clicks = $gameBoard.data('moveCount');
-        var duration = Math.floor((new Date().getTime() - $('.timer').data('startTime').getTime()) / 1000);
-        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden'
+        var clicks = $gameBoard.data(moveCountDataName);
+        var duration = Math.floor(
+            (Date.now() - $('.timer').data(startTimeDataName))
+            / 1000
+        );
+        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden';
         $('.modal-footer .details').text(infoText);
 
-        // $('.modal').show();
         $('.resetButton').show();
+    };
+
+    var clearTimer = function () {
+        clearInterval($gameBoard.data(timerIdDataName));
+        $('.timer').empty();
     };
 
     // win
     var win = function () {
-        var jTimer = $('.timer');
-        jTimer.empty();
-        var timerId = jTimer.data('timerId');
-        clearInterval(timerId);
+        clearTimer();
         showModal();
     };
 
     var updateClickCount = function (newCount) {
-        $gameBoard.data('moveCount', newCount);
+        $gameBoard.data(moveCountDataName, newCount);
         var jMoves = $('.moves');
         if (newCount === 0) {
             jMoves.text('');
@@ -160,86 +189,92 @@ $(function () {
 
         // Beim ersten Klick den Timer starten.
         if (newCount === 1) {
-            var startTime = new Date();
+            var startTime = Date.now();
             var jTimer = $('.timer');
-            jTimer.data('startTime', startTime);
+            jTimer.data(startTimeDataName, startTime);
             var timerId = setInterval(function () {
-                var currentTime = new Date();
-                var duration = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000)
+                var duration = Math.floor((Date.now() - startTime) / 1000);
                 jTimer.text(duration + 's');
-            } , 1000);
-            jTimer.data('timerId', timerId);
+            }, 1000);
+            $gameBoard.data(timerIdDataName, timerId);
         }
-  };
+    };
 
-  /**
-   * Click-Event Handler für die Auswahl von Kacheln.
-   */
-  $gameBoard.on('click', 'li', function (event) {
-    var $Target = $(event.currentTarget);
-    var $Image = $Target.find('img');
+    /**
+     * Click-Event Handler für die Auswahl von Kacheln.
+     */
+    $gameBoard.on('click', 'li', function (event) {
+        var $target = $(event.currentTarget);
 
-    // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
-    if ($Target.hasClass(foundClass) || $Target.hasClass(peekClass)) {
-        return;
-    }
+        // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
+        if ($target.hasClass(foundClass) || $target.hasClass(peekClass)) {
+            return;
+        }
 
-    updateClickCount($gameBoard.data('moveCount') + 1);
+        updateClickCount($gameBoard.data(moveCountDataName) + 1);
 
-    // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
-    var $oldPeek = $gameBoard.find('.' + peekClass);
-    if ($oldPeek.length > 1) {
-        $oldPeek
-            .removeClass(peekClass)
-            .removeClass(timeoutClass);
-    }
+        // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
+        var $oldPeek = $gameBoard.find('.' + peekClass);
+        if ($oldPeek.length > 1) {
+            $oldPeek
+                .removeClass(peekClass)
+                .removeClass(timeoutClass);
+        }
 
-    // Geklickte Karte aufdecken.
-    $Target.addClass(peekClass);
+        // Geklickte Karte aufdecken.
+        $target.addClass(peekClass);
 
-    // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
-    var $newPeek = $gameBoard.find('.' + peekClass);
-    if ($newPeek.length === 2) {
-        if ($newPeek.first().data(identifierDataAttributeName) === $newPeek.last().data(identifierDataAttributeName)) {
-            $newPeek
-                .addClass(foundClass)
-                .removeClass(peekClass);
-        } else {
-            $newPeek.addClass(timeoutClass);
-            setTimeout(function () {
+        // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
+        var $newPeek = $gameBoard.find('.' + peekClass);
+        if ($newPeek.length === 2) {
+            if ($newPeek.first().data(identifierDataName) === $newPeek.last().data(identifierDataName)) {
                 $newPeek
-                    .filter(function (index, element) {
-                        return $(element).hasClass(timeoutClass);
-                    })
-                    .removeClass(peekClass)
-                    .removeClass(timeoutClass);
-            }, 2000);
+                    .addClass(foundClass)
+                    .removeClass(peekClass);
+            } else {
+                $newPeek.addClass(timeoutClass);
+                setTimeout(function () {
+                    $newPeek
+                        .filter(function (index, element) {
+                            return $(element).hasClass(timeoutClass);
+                        })
+                        .removeClass(peekClass)
+                        .removeClass(timeoutClass);
+                }, 2000);
+            }
         }
-    }
 
-    if ($gameBoard.find('.' + foundClass).length === getNumberOfPairs() * 2) {
-        win();
-    }
-  });
+        if ($gameBoard.find('.cell:not(.found)').length === 0) {
+            win();
+        }
+    });
 
-  /**
-   * Brett neu aufbauen und Spielstand zurücksetzen.
-   */
-  var resetGame = function () {
-      fillBoard();
-      $('#container').show();
-      $('.modal').hide();
-      updateClickCount(0);
-  };
+    /**
+     * Brett neu aufbauen und Spielstand zurücksetzen.
+     */
+    var resetGame = function () {
+        fillBoard();
+        $('#container').show();
+        $('.modal').hide();
+        updateClickCount(0);
+        clearTimer();
+    };
 
-  /**
-   * Click Event-Handler für Reset-Knopf.
-   */
-  $(document).on('click', '.resetButton, .difficult', resetGame);
+    /**
+     * Event-Handler zum Neustart des Spiels
+     */
+    $(document)
+    // für Knöpfe und Checkbox
+        .on('click', '.resetButton, .restartGame, .difficult', resetGame)
+    // für Änderungen der Menüauswahl
+        .on('change', '.sizeSelection, .centurySelection', resetGame);
 
-  /**
-   * Click Event-Handler für das Spielfeld-Größenmenü.
-   */
-  $(document).on('change', '.sizeSelection, .centurySelection', resetGame);
+    /**
+     * Münzdaten (asynchron) laden.
+     */
+    $.getJSON('analyse/06-result-memory.json', function (data) {
+        imageData = data;
+        resetGame();
+    });
 
 });

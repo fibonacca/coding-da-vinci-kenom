@@ -1,32 +1,140 @@
-#container {
-    width: 800px;
+/**
+ * Allgemein.
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Hoefler Text', 'Palatino', 'Georgia', serif;
+    color: #333;
 }
 
-#gameBoard li {
+select {
+    font-family: Verdana, Helvetica, sans-serif;
+}
+
+
+/**
+ * Header.
+ */
+
+#header {
+    margin-bottom: 1em;
+    padding: 0.75em 1em 0.75em;
+    background: gold;
+}
+
+
+#header h1 {
     display: inline-block;
-    margin: 10px;
-    padding: 0;
-    width: 150px;
-    height: 150px;
+    margin-bottom: 0.4em;
+    width: 48%;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stats {
+    display: inline-block;
+    width: 50%;
+    text-align: right;
+}
+
+.info {
+    position: relative;
+    display: inline-block;
+}
+
+.info .icon {
+    color: #fff;
+}
+.info:hover .icon {
+    color: #333;
+}
+
+
+.displayOnHover {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 125%;
+    border: 3px solid white;
+    background: gold;
+    text-align: left;
+    padding: 1em 1em 0.75em 1em;
+}
+
+.info p {
+margin-bottom: 0.5em;
+}
+
+.info p:last-child {
+margin-bottom: 0;
+}
+
+.info:hover .displayOnHover {
+    display: block;
+}
+
+
+/**
+ * Spielbrett.
+ */
+
+#gameBoard{
+    margin: auto;
+}
+
+li {
+    display: inline-block;
+    box-sizing: border-box;
     list-style: none;
     background: #eee;
+    height: 0;
 }
 
-img {
-  width: 100%;
-  height: 100%;
-  visibility: hidden;
+.columns-4 .cell {
+    width: 23%;
+    padding-bottom: 23%;
+    margin: 0.75% 1%;
 }
 
-.peek img {
+.columns-6 .cell {
+    width: 15%;
+    padding-bottom: 15%;
+    margin: 0.5% 0.75%;
+}
+
+.columns-8 .cell {
+    width: 11.5%;
+    padding-bottom: 11.5%;
+    margin: 0.25% 0.5%;
+}
+
+.cell img {
+    display: block;
+    visibility: hidden;
+    width: 100%;
+}
+
+.cell.peek {
+    background: transparent;
+}
+
+.cell.peek img {
     visibility: visible;
 }
 
-.found img {
+.cell.found img {
     visibility: visible;
     opacity: 0.3;
 }
 
+
+
+/**
+ * Knöpfe.
+ */
 .control {
     display: inline-block;
     margin-right: 1em;
@@ -37,7 +145,7 @@ img {
 }
 
 .resetButton{
-	background-color: #1f4e5f;
+	background-color: goldenrod;
     border: none;
     color: #f4f7f7;
     padding: 15px 32px;
@@ -51,8 +159,6 @@ img {
     font-size: 25px;
     display: none;
 }
-
-
 
 .modal {
     display: none; /* Hidden by default */
@@ -112,17 +218,16 @@ img {
 }
 
 .modal-header {
-    padding: 2px 16px;
-    background-color: #79a8a9;
+    padding: 1em;
+    background-color: gold;
     text-align: center;
     color: #f4f7f7;
     font-family: fantasy;
-
 }
 
 .modal-footer {
     padding: 36px;
-    background-color: #79a8a9;
+    background-color: gold;
     color: #f4f7f7;
     text-align: center;
     font-size: 121%;

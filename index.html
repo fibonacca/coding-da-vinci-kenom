@@ -10,6 +10,73 @@
 </head>
 <body>
 
+    <div id="header">
+        <div class="header1">
+            <h1>Münz-Memory</h1>
+            <div class="stats">
+                <div class="control">
+                    <p class="timer"></p>
+                </div>
+                <div class="control">
+                    <p class="moves"></p>
+                </div>
+                <div class="info">
+                    <span class="icon">🛈</span>
+                    <div class="displayOnHover">
+                        <p>
+                            Ein Projekt für <a href="https://codingdavinci.de">Coding da Vinci</a> Nord 2016.
+                            von Oxana Maslova und Sven-S. Porst.
+                        </p><p>
+                            Münzdaten und -bilder: <a href="http://www.kenom.de">KENOM</a> Virtuelles Münzkabinett.
+                        </p>
+                        <p>
+                            <a href="https://github.com/ssp/coding-da-vinci-kenom">Quellcode</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control">
+                <label>
+                    Größe:
+                    <select class="sizeSelection">
+                        <option value="[4, 4]" selected="selected">16</option>
+                        <option value="[6, 4]">24</option>
+                        <option value="[6, 6]">36</option>
+                        <option value="[8, 6]">48</option>
+                    </select>
+                </label>
+            </div>
+            <div class="control">
+                <label>
+                    Jhdt.:
+                    <select class="centurySelection">
+                        <option value="[-10000, 10000]" selected="selected">Alle</option>
+                        <option value="[-10000, 0]">III - I  v.Chr.</option><
+                        <option value="[0, 1000]">I-X n.Chr.</option>
+                        <option value="[1000, 1300]">XI-XIII</option>
+                        <option value="[1300, 1400]">XIV</option>
+                        <option value="[1400, 1700]">XV-XVII</option>
+                        <option value="[1700, 1800]">XVIII</option>
+                        <option value="[1800, 1900]">XIX</option><
+                        <option value="[1900, 2100]">XX - XXI</option>
+                    </select>
+                </label>
+            </div>
+            <div class="control">
+                <label title="Die Vorder- und Rückseite der Münze zusammenfinden.">
+                    <input class="difficult" type="checkbox">
+                    schwierig
+                </label>
+            </div>
+            <div class="control">
+                <button class="restartGame" title="Spiel neu starten">⟲</button>
+            </div>
+        </div>
+    </div>
+
     <ol id="gameBoard"></ol>
 
     <div id="myModal" class="modal">
@@ -20,53 +87,11 @@
                 <h2>Glückwunsch!</h2>
             </div>
             <div class="modal-body">
-                <input type="reset" value="Nochmal spielen" class = "resetButton"/>
+                <input type="reset" value="Nochmal spielen" class="resetButton"/>
             </div>
             <div class="modal-footer">
                 <p class="details"></p>
             </div>
-        </div>
-    </div>
-
-    <div class="controls">
-        <div class="control">
-            <label>
-                Größe:
-                <select class="sizeSelection">
-                    <option value="[4, 4]" selected="selected">16</option>
-                    <option value="[6, 4]">24</option>
-                    <option value="[6, 6]">36</option>
-                    <option value="[8, 6]">48</option>
-                </select>
-            </label>
-        </div>
-        <div class="control">
-            <label>
-                Jahrhundert:
-                <select class="centurySelection">
-                    <option value="[-10000, 10000]" selected="selected">Alle</option>
-                    <option value="[-10000, 0]">III - I  v.Chr.</option><
-                    <option value="[0, 1000]">I-X n.Chr.</option>
-                    <option value="[1000, 1300]">XI-XIII</option>
-                    <option value="[1300, 1400]">XIV</option>
-                    <option value="[1400, 1700]">XV-XVII</option>
-                    <option value="[1700, 1800]">XVIII</option>
-                    <option value="[1800, 1900]">XIX</option><
-                    <option value="[1900, 2100]">XX - XXI</option>
-                </select>
-            </label>
-        </div>
-        <div class="control">
-            <label title="Die Vorder- und Rückseite der Münze zusammenfinden.">
-                <input class="difficult" type="checkbox">
-                schwierig
-            </label>
-        </div>
-        <div class="control">
-            <p class="moves"></p>
-        </div>
-        <div class="control">
-            <p class="timer"></p>
         </div>
     </div>
 
