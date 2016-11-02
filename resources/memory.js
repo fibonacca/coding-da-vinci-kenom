@@ -205,18 +205,40 @@ $(function () {
         }
     };
 
-    var updateLastSelectionText = function () {
+    var createKenomLinkUrl = function (identifier) {
+        return 'http://www.kenom.de/objekt/record_' + identifier + '/1/';
+    };
+
+    var createCoinLink = function (identifier) {
+        var a = document.createElement('a');
+        a.setAttribute('href', createKenomLinkUrl(identifier));
+        a.setAttribute('target', 'muenzmemory-kenom');
+        a.setAttribute('title', 'Diese Münze auf der KENOM Website vollständig betrachten.')
+        a.appendChild(document.createTextNode('Details …'));
+        return a;
+    };
+
+    var updateLastSelectionInfo = function () {
         var $lastSelected = $('.' + lastSelectionClass);
         var newText = $lastSelected.length > 0
             ? $lastSelected.data(descriptionDataName)
             : '';
-        $('.' + selectionInfoClass).text(newText);
+
+        var $selectionInfo = $('.' + selectionInfoClass);
+        $selectionInfo.empty()
+            .append(document.createTextNode(newText));
+
+        if (newText !== '') {
+            $selectionInfo
+                .append(document.createTextNode(' – '))
+                .append(createCoinLink($lastSelected.data('identifier')));
+        }
     };
 
     var setLastSelection = function ($element) {
         $('.' + lastSelectionClass).removeClass(lastSelectionClass);
         $element.addClass(lastSelectionClass);
-        updateLastSelectionText();
+        updateLastSelectionInfo();
     };
 
     var removePeek = function ($elements) {
@@ -225,7 +247,7 @@ $(function () {
             .removeClass(timeoutClass)
             .removeClass(lastSelectionClass)
             .removeAttr('title');
-        updateLastSelectionText();
+        updateLastSelectionInfo();
     };
 
     /**

@@ -134,8 +134,11 @@ li {
 }
 
 .selectionInfo {
-    text-align: center;
     margin: auto;
+    text-align: center;
+    font-size: 115%;
+    font-style: italic;
+    text-shadow: gold 0 0 5px;
 }
 
 /**
