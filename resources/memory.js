@@ -1,4 +1,4 @@
-/*global $, _, document */
+/*global $, _, document, window */
 $(function () {
     'use strict';
 
@@ -28,9 +28,8 @@ $(function () {
     /**
      * Brettgröße aus Auswahl im Menü ermittlen.
      */
-    var getNumberOfPairs = function () {
-        var dimensions = getBoardDimensions();
-        return dimensions[0] * dimensions[1] / 2;
+    var getNumberOfPairs = function (boardDimensions) {
+        return boardDimensions[0] * boardDimensions[1] / 2;
     };
 
     /**
@@ -87,8 +86,8 @@ $(function () {
     /**
      * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
      */
-    var createShuffledImageUrls = function () {
-        var numberOfPairs = getNumberOfPairs();
+    var createShuffledImageUrls = function (boardDimensions) {
+        var numberOfPairs = getNumberOfPairs(boardDimensions);
         var filteredCoins = _.filter(imageData, getCenturyFilter());
         var selectedCoins = _.sample(filteredCoins, numberOfPairs);
         var useBack = isDifficult();
@@ -104,19 +103,45 @@ $(function () {
         return _.sample(imageUrls, imageUrls.length);
     };
 
+    var setBoardSize = function ($board, boardDimensions) {
+        $board.removeClass();
+
+        var w = window.innerWidth;
+        var h = window.innerHeight - 50;
+        var ratio = w / h;
+
+        var columnCount = ratio > 1 ? boardDimensions[0] : boardDimensions[1];
+
+        $board.addClass('columns-' + columnCount);
+        $board.css({
+            width: w - 25
+        });
+    };
+
     /**
      * Frisches Spielfeld mit den übergebenen Bildern erzeugen.
      */
     var fillBoard = function () {
-        var selectedImageUrls = createShuffledImageUrls();
+        var boardDimensions = getBoardDimensions();
+        var selectedImageUrls = createShuffledImageUrls(boardDimensions);
 
         // alte Bilder löschen
         $gameBoard.empty();
+        setBoardSize($gameBoard, boardDimensions);
 
         // neue Bilder einfügen
         _.each(selectedImageUrls, function (imageUrl) {
             var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
-            $gameBoard.append('<li data-' + identifierDataName + '="' + identifiyingString + '"><img src="' + imageUrl + '"/></li>');
+            var li = document.createElement('li');
+            li.setAttribute('data-' + identifierDataName, identifiyingString);
+            li.setAttribute('class', 'cell');
+
+            var img = document.createElement('img');
+            img.setAttribute('src', imageUrl);
+            img.setAttribute('alt', 'Spielstein');
+            li.appendChild(img);
+
+            $gameBoard.append(li);
         });
     };
 
@@ -219,7 +244,7 @@ $(function () {
             }
         }
 
-        if ($gameBoard.find('.' + foundClass).length === getNumberOfPairs() * 2) {
+        if ($gameBoard.find('.cell:not(.found)').length === 0) {
             win();
         }
     });

@@ -1,32 +1,66 @@
-#container {
-    width: 800px;
+/**
+ * Spielbrett.
+ */
+
+* {
+    margin: 0;
+    padding: 0;
 }
 
-#gameBoard li {
+#gameBoard{
+    margin: auto;
+}
+
+li {
     display: inline-block;
-    margin: 10px;
-    padding: 0;
-    width: 150px;
-    height: 150px;
+    box-sizing: border-box;
     list-style: none;
     background: #eee;
+    height: 0;
 }
 
-img {
-  width: 100%;
-  height: 100%;
-  visibility: hidden;
+.columns-4 .cell {
+    width: 23%;
+    padding-bottom: 23%;
+    margin: 0.75% 1%;
 }
 
-.peek img {
+.columns-6 .cell {
+    width: 15%;
+    padding-bottom: 15%;
+    margin: 0.5% 0.75%;
+}
+
+.columns-8 .cell {
+    width: 11.5%;
+    padding-bottom: 11.5%;
+    margin: 0.25% 0.5%;
+}
+
+.cell img {
+    display: block;
+    visibility: hidden;
+    width: 100%;
+}
+
+.cell.peek {
+    background: transparent;
+}
+
+.cell.peek img {
     visibility: visible;
 }
 
-.found img {
+.cell.found img {
     visibility: visible;
     opacity: 0.3;
 }
 
+
+
+/**
+ * Knöpfe.
+ */
 .control {
     display: inline-block;
     margin-right: 1em;
