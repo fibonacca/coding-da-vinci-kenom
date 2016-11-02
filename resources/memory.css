@@ -51,13 +51,12 @@ select {
     color: #333;
 }
 
-
-.displayOnHover {
+.info .displayOnHover {
     display: none;
     position: absolute;
     top: 100%;
     right: 0;
-    width: 125%;
+    width: 20em;
     border: 3px solid white;
     background: gold;
     text-align: left;
