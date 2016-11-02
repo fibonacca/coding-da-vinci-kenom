@@ -129,7 +129,14 @@ li {
     opacity: 0.3;
 }
 
+.cell.lastSelection {
+    box-shadow: 0px 0px 10px gold;
+}
 
+.selectionInfo {
+    text-align: center;
+    margin: auto;
+}
 
 /**
  * Knöpfe.

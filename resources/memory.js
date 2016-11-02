@@ -11,9 +11,12 @@ $(function () {
     var foundClass = 'found';
     var peekClass = 'peek';
     var timeoutClass = 'timeout';
+    var lastSelectionClass = 'lastSelection';
+    var selectionInfoClass = 'selectionInfo';
 
     // Namen für Datenfelder and DOM-Elementen
     var identifierDataName = 'identifier';
+    var descriptionDataName = 'description';
     var moveCountDataName = 'moveCount';
     var startTimeDataName = 'startTime';
     var timerIdDataName = 'timerId';
@@ -86,21 +89,21 @@ $(function () {
     /**
      * Zufällig geordnete Liste von Bildern für die Brettgröße erzeugen.
      */
-    var createShuffledImageUrls = function (boardDimensions) {
+    var shuffleCoins = function (boardDimensions) {
         var numberOfPairs = getNumberOfPairs(boardDimensions);
         var filteredCoins = _.filter(imageData, getCenturyFilter());
         var selectedCoins = _.sample(filteredCoins, numberOfPairs);
-        var useBack = isDifficult();
-        var imageUrls = _.flatten(
+        var shuffled = _.flatten(
             _.map(selectedCoins, function (coin) {
-                return [
-                    createImageUrl(coin, false),
-                    createImageUrl(coin, useBack)
-                ];
+                var firstCopy = _.clone(coin);
+                firstCopy.back = false;
+                var secondCopy = _.clone(coin);
+                secondCopy.back = isDifficult();
+                return [firstCopy, secondCopy];
             })
         );
 
-        return _.sample(imageUrls, imageUrls.length);
+        return _.sample(shuffled, shuffled.length);
     };
 
     var setBoardSize = function ($board, boardDimensions) {
@@ -123,17 +126,19 @@ $(function () {
      */
     var fillBoard = function () {
         var boardDimensions = getBoardDimensions();
-        var selectedImageUrls = createShuffledImageUrls(boardDimensions);
+        var shuffledCoins = shuffleCoins(boardDimensions);
 
         // alte Bilder löschen
         $gameBoard.empty();
         setBoardSize($gameBoard, boardDimensions);
 
         // neue Bilder einfügen
-        _.each(selectedImageUrls, function (imageUrl) {
-            var identifiyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
+        _.each(shuffledCoins, function (coin) {
             var li = document.createElement('li');
-            li.setAttribute('data-' + identifierDataName, identifiyingString);
+            var imageUrl = createImageUrl(coin, coin.back);
+            var identifyingString = imageUrl.replace(/.*record_/, '').replace(/_[vr]s.*/, '');
+            li.setAttribute('data-' + identifierDataName, identifyingString);
+            li.setAttribute('data-' + descriptionDataName, coin.title);
             li.setAttribute('class', 'cell');
 
             var img = document.createElement('img');
@@ -200,6 +205,29 @@ $(function () {
         }
     };
 
+    var updateLastSelectionText = function () {
+        var $lastSelected = $('.' + lastSelectionClass);
+        var newText = $lastSelected.length > 0
+            ? $lastSelected.data(descriptionDataName)
+            : '';
+        $('.' + selectionInfoClass).text(newText);
+    };
+
+    var setLastSelection = function ($element) {
+        $('.' + lastSelectionClass).removeClass(lastSelectionClass);
+        $element.addClass(lastSelectionClass);
+        updateLastSelectionText();
+    };
+
+    var removePeek = function ($elements) {
+        $elements
+            .removeClass(peekClass)
+            .removeClass(timeoutClass)
+            .removeClass(lastSelectionClass)
+            .removeAttr('title');
+        updateLastSelectionText();
+    };
+
     /**
      * Click-Event Handler für die Auswahl von Kacheln.
      */
@@ -216,13 +244,15 @@ $(function () {
         // War vorher mehr als eine Karte aufgedeckt, aufgedeckte Karten zurückdrehen.
         var $oldPeek = $gameBoard.find('.' + peekClass);
         if ($oldPeek.length > 1) {
-            $oldPeek
-                .removeClass(peekClass)
-                .removeClass(timeoutClass);
+            removePeek($oldPeek);
         }
 
         // Geklickte Karte aufdecken.
-        $target.addClass(peekClass);
+        $target
+            .addClass(peekClass)
+            .attr('title', $target.data(descriptionDataName));
+
+        setLastSelection($target);
 
         // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
         var $newPeek = $gameBoard.find('.' + peekClass);
@@ -234,12 +264,11 @@ $(function () {
             } else {
                 $newPeek.addClass(timeoutClass);
                 setTimeout(function () {
-                    $newPeek
-                        .filter(function (index, element) {
+                    removePeek(
+                        $newPeek.filter(function (index, element) {
                             return $(element).hasClass(timeoutClass);
                         })
-                        .removeClass(peekClass)
-                        .removeClass(timeoutClass);
+                    );
                 }, 2000);
             }
         }
@@ -272,7 +301,7 @@ $(function () {
     /**
      * Münzdaten (asynchron) laden.
      */
-    $.getJSON('analyse/06-result-memory.json', function (data) {
+    $.getJSON('https://raw.githubusercontent.com/ssp/coding-da-vinci-kenom/master/analyse/06-result-memory.json', function (data) {
         imageData = data;
         resetGame();
     });
