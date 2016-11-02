@@ -261,14 +261,13 @@ $(function () {
     };
 
     /**
-     * Click Event-Handler für Reset-Knopf.
+     * Event-Handler zum Neustart des Spiels
      */
-    $(document).on('click', '.resetButton, .difficult', resetGame);
-
-    /**
-     * Click Event-Handler für das Spielfeld-Größenmenü.
-     */
-    $(document).on('change', '.sizeSelection, .centurySelection', resetGame);
+    $(document)
+    // für Knöpfe und Checkbox
+        .on('click', '.resetButton, .restartGame, .difficult', resetGame)
+    // für Änderungen der Menüauswahl
+        .on('change', '.sizeSelection, .centurySelection', resetGame);
 
     /**
      * Münzdaten (asynchron) laden.

@@ -1,11 +1,85 @@
 /**
- * Spielbrett.
+ * Allgemein.
  */
 
 * {
     margin: 0;
     padding: 0;
+    font-family: 'Hoefler Text', 'Palatino', 'Georgia', serif;
+    color: #333;
 }
+
+select {
+    font-family: Verdana, Helvetica, sans-serif;
+}
+
+
+/**
+ * Header.
+ */
+
+#header {
+    margin-bottom: 1em;
+    padding: 0.75em 1em 0.75em;
+    background: gold;
+}
+
+
+#header h1 {
+    display: inline-block;
+    margin-bottom: 0.4em;
+    width: 48%;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stats {
+    display: inline-block;
+    width: 50%;
+    text-align: right;
+}
+
+.info {
+    position: relative;
+    display: inline-block;
+}
+
+.info .icon {
+    color: #fff;
+}
+.info:hover .icon {
+    color: #333;
+}
+
+
+.displayOnHover {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 125%;
+    border: 3px solid white;
+    background: gold;
+    text-align: left;
+    padding: 1em 1em 0.75em 1em;
+}
+
+.info p {
+margin-bottom: 0.5em;
+}
+
+.info p:last-child {
+margin-bottom: 0;
+}
+
+.info:hover .displayOnHover {
+    display: block;
+}
+
+
+/**
+ * Spielbrett.
+ */
 
 #gameBoard{
     margin: auto;
@@ -71,7 +145,7 @@ li {
 }
 
 .resetButton{
-	background-color: #1f4e5f;
+	background-color: goldenrod;
     border: none;
     color: #f4f7f7;
     padding: 15px 32px;
@@ -85,8 +159,6 @@ li {
     font-size: 25px;
     display: none;
 }
-
-
 
 .modal {
     display: none; /* Hidden by default */
@@ -146,17 +218,16 @@ li {
 }
 
 .modal-header {
-    padding: 2px 16px;
-    background-color: #79a8a9;
+    padding: 1em;
+    background-color: gold;
     text-align: center;
     color: #f4f7f7;
     font-family: fantasy;
-
 }
 
 .modal-footer {
     padding: 36px;
-    background-color: #79a8a9;
+    background-color: gold;
     color: #f4f7f7;
     text-align: center;
     font-size: 121%;
