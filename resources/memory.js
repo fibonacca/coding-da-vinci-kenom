@@ -196,8 +196,9 @@ $(function () {
         $('.modal-footer .details').text(createScoreInfo(score));
 
         var oldHighscore = readHighscore();
-        var newHighscoreText = (oldHighscore !== null)
-            && ((score.dauer < oldHighscore.dauer) || (score.zuege < oldHighscore.zuege))
+        var isNewHighscore = (oldHighscore !== null)
+                && ((score.dauer < oldHighscore.dauer) || (score.zuege < oldHighscore.zuege));
+        var newHighscoreText = isNewHighscore
             ? 'Neuer Rekord! (Vorher: ' + createScoreInfo(oldHighscore) + ')'
             : '';
         $('.modal-footer .details2')
@@ -218,39 +219,6 @@ $(function () {
             dauer: Math.floor((Date.now() - $('.timer').data(startTimeDataName)) / 1000)
         };
     };
-
-    // win
-    var win = function () {
-        clearTimer();
-        var newScore = computeScore();
-        showModal(newScore);
-        updateHighscore(newScore);
-    };
-
-    var updateClickCount = function (newCount) {
-        $gameBoard.data(moveCountDataName, newCount);
-        var jMoves = $('.moves');
-        if (newCount === 0) {
-            jMoves.text('');
-        } else if (newCount === 1) {
-            jMoves.text(' 1 Klick');
-        } else {
-            jMoves.text(newCount + ' Klicks');
-        }
-
-        // Beim ersten Klick den Timer starten.
-        if (newCount === 1) {
-            var startTime = Date.now();
-            var jTimer = $('.timer');
-            jTimer.data(startTimeDataName, startTime);
-            var timerId = setInterval(function () {
-                var duration = Math.floor((Date.now() - startTime) / 1000);
-                jTimer.text(duration + 's');
-            }, 1000);
-            $gameBoard.data(timerIdDataName, timerId);
-        }
-    };
-
     var createKenomLinkUrl = function (identifier) {
         return 'http://www.kenom.de/objekt/record_' + identifier + '/1/';
     };
@@ -259,7 +227,7 @@ $(function () {
         var a = document.createElement('a');
         a.setAttribute('href', createKenomLinkUrl(identifier));
         a.setAttribute('target', 'muenzmemory-kenom');
-        a.setAttribute('title', 'Diese Münze auf der KENOM Website vollständig betrachten.')
+        a.setAttribute('title', 'Diese Münze auf der KENOM Website vollständig betrachten.');
         a.appendChild(document.createTextNode('Details …'));
         return a;
     };
@@ -294,6 +262,40 @@ $(function () {
             .removeClass(lastSelectionClass)
             .removeAttr('title');
         updateLastSelectionInfo();
+    };
+
+    // win
+    var win = function () {
+        clearTimer();
+        $gameBoard.find('.' + lastSelectionClass).removeClass(lastSelectionClass);
+        updateLastSelectionInfo();
+        var newScore = computeScore();
+        showModal(newScore);
+        updateHighscore(newScore);
+    };
+
+    var updateClickCount = function (newCount) {
+        $gameBoard.data(moveCountDataName, newCount);
+        var jMoves = $('.moves');
+        if (newCount === 0) {
+            jMoves.text('');
+        } else if (newCount === 1) {
+            jMoves.text(' 1 Klick');
+        } else {
+            jMoves.text(newCount + ' Klicks');
+        }
+
+        // Beim ersten Klick den Timer starten.
+        if (newCount === 1) {
+            var startTime = Date.now();
+            var jTimer = $('.timer');
+            jTimer.data(startTimeDataName, startTime);
+            var timerId = setInterval(function () {
+                var duration = Math.floor((Date.now() - startTime) / 1000);
+                jTimer.text(duration + 's');
+            }, 1000);
+            $gameBoard.data(timerIdDataName, timerId);
+        }
     };
 
     /**
