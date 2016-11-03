@@ -69,15 +69,16 @@ select {
 }
 
 .info p {
-margin-bottom: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 .info p:last-child {
-margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .info:hover .displayOnHover {
     display: block;
+    z-index: 1;
 }
 
 
