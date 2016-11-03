@@ -150,7 +150,41 @@ $(function () {
         });
     };
 
-    var showModal = function () {
+    var createHighscoreKey = function () {
+        return JSON.stringify(getBoardDimensions());
+    };
+
+    var readHighscore = function () {
+        if (_.isObject(localStorage)) {
+            return JSON.parse(localStorage.getItem(createHighscoreKey()));
+        }
+        return;
+    };
+
+    var writeHighscore = function (newValues) {
+        if (_.isObject(localStorage)) {
+            localStorage.setItem(createHighscoreKey(), JSON.stringify(newValues));
+        }
+    };
+
+    var updateHighscore = function (newValues) {
+        var highscore = readHighscore() || newValues;
+        if (highscore) {
+            if (newValues.dauer < highscore.dauer) {
+                highscore.dauer = newValues.dauer;
+            }
+            if (newValues.zuege < highscore.zuege) {
+                highscore.zuege = newValues.zuege;
+            }
+        }
+        writeHighscore(highscore);
+    };
+
+    var createScoreInfo = function (score) {
+        return score.zuege + ' Klicks in ' + score.dauer + ' Sekunden';
+    };
+
+    var showModal = function (score) {
         var modal = document.getElementById('myModal');
         modal.style.display = 'block';
 
@@ -159,13 +193,16 @@ $(function () {
             modal.style.display = 'none';
         });
 
-        var clicks = $gameBoard.data(moveCountDataName);
-        var duration = Math.floor(
-            (Date.now() - $('.timer').data(startTimeDataName))
-            / 1000
-        );
-        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden';
-        $('.modal-footer .details').text(infoText);
+        $('.modal-footer .details').text(createScoreInfo(score));
+
+        var oldHighscore = readHighscore();
+        var newHighscoreText = (oldHighscore !== null)
+            && ((score.dauer < oldHighscore.dauer) || (score.zuege < oldHighscore.zuege))
+            ? 'Neuer Rekord! (Vorher: ' + createScoreInfo(oldHighscore) + ')'
+            : '';
+        $('.modal-footer .details2')
+            .toggle(newHighscoreText)
+            .text(newHighscoreText);
 
         $('.resetButton').show();
     };
@@ -175,10 +212,19 @@ $(function () {
         $('.timer').empty();
     };
 
+    var computeScore = function () {
+        return {
+            zuege: $gameBoard.data(moveCountDataName),
+            dauer: Math.floor((Date.now() - $('.timer').data(startTimeDataName)) / 1000)
+        };
+    };
+
     // win
     var win = function () {
         clearTimer();
-        showModal();
+        var newScore = computeScore();
+        showModal(newScore);
+        updateHighscore(newScore);
     };
 
     var updateClickCount = function (newCount) {

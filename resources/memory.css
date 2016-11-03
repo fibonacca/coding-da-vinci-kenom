@@ -240,9 +240,13 @@ li {
 }
 
 .modal-footer {
-    padding: 36px;
+    padding: 1em;
     background-color: gold;
     color: #f4f7f7;
     text-align: center;
     font-size: 121%;
+}
+
+.modal-footer .details {
+    margin-top: 1em;
 }
