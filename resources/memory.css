@@ -88,6 +88,7 @@ select {
 
 #gameBoard{
     margin: auto;
+    -webkit-tap-highlight-color: transparent;
 }
 
 li {
