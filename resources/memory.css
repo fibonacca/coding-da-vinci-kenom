@@ -261,6 +261,6 @@ li {
     font-size: 121%;
 }
 
-.modal-footer .details {
+.modal-footer .details, .details2 {
     margin-top: 1em;
 }

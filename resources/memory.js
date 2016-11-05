@@ -227,7 +227,7 @@ $(function () {
         var isNewHighscore = (oldHighscore !== null)
                 && ((score.dauer < oldHighscore.dauer) || (score.zuege < oldHighscore.zuege));
         var newHighscoreText = isNewHighscore
-            ? 'Neuer Rekord! (Vorher: ' + createScoreInfo(oldHighscore) + ')'
+            ? 'Neuer Rekord für diese Schwierigkeit! (Vorher: ' + createScoreInfo(oldHighscore) + ')'
             : '';
         $('.modal-footer .details2')
             .toggle(newHighscoreText)
