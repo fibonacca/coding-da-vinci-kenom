@@ -140,8 +140,12 @@ li {
     opacity: 0.3;
 }
 
+.hasWon .cell.found img {
+    opacity: 1;
+}
+
 .cell.lastSelection {
-    box-shadow: 0px 0px 10px gold;
+    box-shadow: 0px 0px 10px 1px gold;
 }
 
 .selectionInfo {

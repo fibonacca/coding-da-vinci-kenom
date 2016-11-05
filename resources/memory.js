@@ -13,6 +13,7 @@ $(function () {
     var timeoutClass = 'timeout';
     var lastSelectionClass = 'lastSelection';
     var selectionInfoClass = 'selectionInfo';
+    var hasWonClass = 'hasWon';
 
     // Namen für Datenfelder and DOM-Elementen
     var identifierDataName = 'identifier';
@@ -106,6 +107,10 @@ $(function () {
         return _.sample(shuffled, shuffled.length);
     };
 
+    /**
+     * Setzt CSS-Klassen und Größenwerte, damit das Spielfeld vollständig
+     * in den aktuellen Viewport paßt.
+     */
     var setBoardSize = function ($board, boardDimensions) {
         $board.removeClass();
 
@@ -161,12 +166,19 @@ $(function () {
         });
     };
 
+    /**
+     * Erzeugt den Schlüssel, unter dem der Higscore für die akutellen
+     * Einstellungen abgelegt wird.
+     */
     var createHighscoreKey = function () {
         return 'highscore-'
                 + JSON.stringify(getBoardDimensions()) + '-'
                 + JSON.stringify(isDifficult());
     };
 
+    /**
+     * Liest den Highscore aus localStorage.
+     */
     var readHighscore = function () {
         if (_.isObject(localStorage)) {
             return JSON.parse(localStorage.getItem(createHighscoreKey()));
@@ -174,6 +186,9 @@ $(function () {
         return;
     };
 
+    /**
+     * Schreibt den Highscore nach localStorage.
+     */
     var writeHighscore = function (newValues) {
         if (_.isObject(localStorage)) {
             localStorage.setItem(createHighscoreKey(), JSON.stringify(newValues));
@@ -232,10 +247,17 @@ $(function () {
             dauer: Math.floor((Date.now() - $('.timer').data(startTimeDataName)) / 1000)
         };
     };
+
+    /**
+     * Erzeugt aus dem KENOM-Identifier die URL zur KENOM Seite der zugehörigen Münze.
+     */
     var createKenomLinkUrl = function (identifier) {
         return 'http://www.kenom.de/objekt/record_' + identifier + '/1/';
     };
 
+    /**
+     * Erzeugt einen Link zur KENOM-Seite der Münze mit dem identifier.
+     */
     var createCoinLink = function (identifier) {
         var a = document.createElement('a');
         a.setAttribute('href', createKenomLinkUrl(identifier));
@@ -245,6 +267,10 @@ $(function () {
         return a;
     };
 
+    /**
+     * Zeigt Informationen und einen KENOM-Link zur zuletzt gewählten
+     * Münze an.
+     */
     var updateLastSelectionInfo = function () {
         var $lastSelected = $('.' + lastSelectionClass);
         var newText = $lastSelected.length > 0
@@ -277,16 +303,23 @@ $(function () {
         updateLastSelectionInfo();
     };
 
-    // win
+    /**
+     * Spielgewinn.
+     */
     var win = function () {
         clearTimer();
         $gameBoard.find('.' + lastSelectionClass).removeClass(lastSelectionClass);
+        $gameBoard.addClass(hasWonClass);
         updateLastSelectionInfo();
         var newScore = computeScore();
         showModal(newScore);
         updateHighscore(newScore);
     };
 
+    /**
+     * Aktualisierung der bisherigen Klickanzahl.
+     * Startet beim ersten Klick auch den Timer.
+     */
     var updateClickCount = function (newCount) {
         $gameBoard.data(moveCountDataName, newCount);
         var jMoves = $('.moves');
@@ -317,6 +350,14 @@ $(function () {
     $gameBoard.on('click', 'li', function (event) {
         var $target = $(event.currentTarget);
 
+        // Geklicktes Element hervorheben.
+        setLastSelection($target);
+
+        // In bereits gewonnenem Spiel Klicks nicht weiter auswerten.
+        if ($gameBoard.hasClass(hasWonClass)) {
+            return;
+        }
+
         // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
         if ($target.hasClass(foundClass) || $target.hasClass(peekClass)) {
             return;
@@ -334,8 +375,6 @@ $(function () {
         $target
             .addClass(peekClass)
             .attr('title', $target.data(descriptionDataName));
-
-        setLastSelection($target);
 
         // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
         var $newPeek = $gameBoard.find('.' + peekClass);
@@ -361,6 +400,10 @@ $(function () {
         }
     });
 
+    /**
+     * Schreibt die aktuellen Einstellungen der Auswahlmenüs und
+     * Checkbox in localStorage.
+     */
     var saveCurrentSettings = function () {
         if (_.isObject(localStorage)) {
             var settings = {
@@ -372,6 +415,10 @@ $(function () {
         }
     };
 
+    /**
+     * Stellt die Einstellungen der Auswahlmenüs und Checkbox aus
+     * den in localStorage gespeicherten Werten wieder her.
+     */
     var restoreSavedSettings = function () {
         if (_.isObject(localStorage)) {
             var settingsJSON = localStorage.getItem('settings');
@@ -388,6 +435,7 @@ $(function () {
      * Brett neu aufbauen und Spielstand zurücksetzen.
      */
     var resetGame = function () {
+        $gameBoard.removeClass(hasWonClass);
         saveCurrentSettings();
         fillBoard();
         $('#container').show();
