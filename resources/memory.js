@@ -151,7 +151,9 @@ $(function () {
     };
 
     var createHighscoreKey = function () {
-        return JSON.stringify(getBoardDimensions());
+        return 'highscore-'
+                + JSON.stringify(getBoardDimensions()) + '-'
+                + JSON.stringify(isDifficult());
     };
 
     var readHighscore = function () {
