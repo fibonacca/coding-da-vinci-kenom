@@ -27,3 +27,8 @@ Der Ordner »analyse« enthält Skripte, die zur Extraktion der gewünschten Dat
 ### Lizenz
 
 Dieses Projekt wird unter einer MIT-Lizenz zur Verfügung gestellt.
+
+
+### Screenshot
+
+![Screenshot des Münz-Memory](https://raw.githubusercontent.com/ssp/coding-da-vinci-kenom/master/resources/screenshot.png)
