@@ -348,10 +348,34 @@ $(function () {
         }
     });
 
+    var saveCurrentSettings = function () {
+        if (_.isObject(localStorage)) {
+            var settings = {
+                'boardSize': JSON.parse($('.sizeSelection').val()),
+                'century': JSON.parse($('.centurySelection').val()),
+                'difficult': $('.difficult').prop('checked')
+            };
+            localStorage.setItem('settings', JSON.stringify(settings));
+        }
+    };
+
+    var restoreSavedSettings = function () {
+        if (_.isObject(localStorage)) {
+            var settingsJSON = localStorage.getItem('settings');
+            if (settingsJSON) {
+                var settings = JSON.parse(settingsJSON);
+                $('.sizeSelection').val(JSON.stringify(settings.boardSize));
+                $('.centurySelection').val(JSON.stringify(settings.century));
+                $('.difficult').prop('checked', settings.difficult);
+            }
+        }
+    };
+
     /**
      * Brett neu aufbauen und Spielstand zurücksetzen.
      */
     var resetGame = function () {
+        saveCurrentSettings();
         fillBoard();
         $('#container').show();
         $('.modal').hide();
@@ -367,6 +391,8 @@ $(function () {
         .on('click', '.resetButton, .restartGame, .difficult', resetGame)
     // für Änderungen der Menüauswahl
         .on('change', '.sizeSelection, .centurySelection', resetGame);
+
+    restoreSavedSettings();
 
     /**
      * Münzdaten (asynchron) laden.
