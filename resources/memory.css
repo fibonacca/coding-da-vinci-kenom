@@ -41,6 +41,11 @@ select {
     text-align: right;
 }
 
+.restartGame {
+    cursor: pointer;
+    text-decoration: none;
+}
+
 .info {
     position: relative;
     display: inline-block;
