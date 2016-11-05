@@ -110,15 +110,26 @@ $(function () {
         $board.removeClass();
 
         var w = window.innerWidth;
-        var h = window.innerHeight - 50;
+        var h = window.innerHeight - 150;
         var ratio = w / h;
 
         var columnCount = ratio > 1 ? boardDimensions[0] : boardDimensions[1];
+        var rowCount = ratio > 1 ? boardDimensions[1] : boardDimensions[0];
+
+        var boardWidth = w - 25;
+        var tileSize = boardWidth / columnCount;
+        var boardHeight = tileSize * rowCount;
+
+        if (boardHeight > h) {
+            /*
+             * Die Zeilen sind zusammen zu hoch, um ohne Scrollen angezeigt zu werden.
+             * Darum die Größe weiter reduzieren.
+             */
+            boardWidth = boardWidth / (boardHeight / h);
+        }
 
         $board.addClass('columns-' + columnCount);
-        $board.css({
-            width: w - 25
-        });
+        $board.css({width: boardWidth});
     };
 
     /**
