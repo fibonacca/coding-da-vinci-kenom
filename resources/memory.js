@@ -13,6 +13,7 @@ $(function () {
     var timeoutClass = 'timeout';
     var lastSelectionClass = 'lastSelection';
     var selectionInfoClass = 'selectionInfo';
+    var hasWonClass = 'hasWon';
 
     // Namen für Datenfelder and DOM-Elementen
     var identifierDataName = 'identifier';
@@ -106,19 +107,34 @@ $(function () {
         return _.sample(shuffled, shuffled.length);
     };
 
+    /**
+     * Setzt CSS-Klassen und Größenwerte, damit das Spielfeld vollständig
+     * in den aktuellen Viewport paßt.
+     */
     var setBoardSize = function ($board, boardDimensions) {
         $board.removeClass();
 
         var w = window.innerWidth;
-        var h = window.innerHeight - 50;
+        var h = window.innerHeight - 150;
         var ratio = w / h;
 
         var columnCount = ratio > 1 ? boardDimensions[0] : boardDimensions[1];
+        var rowCount = ratio > 1 ? boardDimensions[1] : boardDimensions[0];
+
+        var boardWidth = w - 25;
+        var tileSize = boardWidth / columnCount;
+        var boardHeight = tileSize * rowCount;
+
+        if (boardHeight > h) {
+            /*
+             * Die Zeilen sind zusammen zu hoch, um ohne Scrollen angezeigt zu werden.
+             * Darum die Größe weiter reduzieren.
+             */
+            boardWidth = boardWidth / (boardHeight / h);
+        }
 
         $board.addClass('columns-' + columnCount);
-        $board.css({
-            width: w - 25
-        });
+        $board.css({width: boardWidth});
     };
 
     /**
@@ -150,7 +166,53 @@ $(function () {
         });
     };
 
-    var showModal = function () {
+    /**
+     * Erzeugt den Schlüssel, unter dem der Higscore für die akutellen
+     * Einstellungen abgelegt wird.
+     */
+    var createHighscoreKey = function () {
+        return 'highscore-'
+                + JSON.stringify(getBoardDimensions()) + '-'
+                + JSON.stringify(isDifficult());
+    };
+
+    /**
+     * Liest den Highscore aus localStorage.
+     */
+    var readHighscore = function () {
+        if (_.isObject(localStorage)) {
+            return JSON.parse(localStorage.getItem(createHighscoreKey()));
+        }
+        return;
+    };
+
+    /**
+     * Schreibt den Highscore nach localStorage.
+     */
+    var writeHighscore = function (newValues) {
+        if (_.isObject(localStorage)) {
+            localStorage.setItem(createHighscoreKey(), JSON.stringify(newValues));
+        }
+    };
+
+    var updateHighscore = function (newValues) {
+        var highscore = readHighscore() || newValues;
+        if (highscore) {
+            if (newValues.dauer < highscore.dauer) {
+                highscore.dauer = newValues.dauer;
+            }
+            if (newValues.zuege < highscore.zuege) {
+                highscore.zuege = newValues.zuege;
+            }
+        }
+        writeHighscore(highscore);
+    };
+
+    var createScoreInfo = function (score) {
+        return score.zuege + ' Klicks in ' + score.dauer + ' Sekunden';
+    };
+
+    var showModal = function (score) {
         var modal = document.getElementById('myModal');
         modal.style.display = 'block';
 
@@ -159,13 +221,17 @@ $(function () {
             modal.style.display = 'none';
         });
 
-        var clicks = $gameBoard.data(moveCountDataName);
-        var duration = Math.floor(
-            (Date.now() - $('.timer').data(startTimeDataName))
-            / 1000
-        );
-        var infoText = clicks + ' Klicks in ' + duration + ' Sekunden';
-        $('.modal-footer .details').text(infoText);
+        $('.modal-footer .details').text(createScoreInfo(score));
+
+        var oldHighscore = readHighscore();
+        var isNewHighscore = (oldHighscore !== null)
+                && ((score.dauer < oldHighscore.dauer) || (score.zuege < oldHighscore.zuege));
+        var newHighscoreText = isNewHighscore
+            ? 'Neuer Rekord für diese Schwierigkeit! (Vorher: ' + createScoreInfo(oldHighscore) + ')'
+            : '';
+        $('.modal-footer .details2')
+            .toggle(newHighscoreText)
+            .text(newHighscoreText);
 
         $('.resetButton').show();
     };
@@ -175,49 +241,36 @@ $(function () {
         $('.timer').empty();
     };
 
-    // win
-    var win = function () {
-        clearTimer();
-        showModal();
+    var computeScore = function () {
+        return {
+            zuege: $gameBoard.data(moveCountDataName),
+            dauer: Math.floor((Date.now() - $('.timer').data(startTimeDataName)) / 1000)
+        };
     };
 
-    var updateClickCount = function (newCount) {
-        $gameBoard.data(moveCountDataName, newCount);
-        var jMoves = $('.moves');
-        if (newCount === 0) {
-            jMoves.text('');
-        } else if (newCount === 1) {
-            jMoves.text(' 1 Klick');
-        } else {
-            jMoves.text(newCount + ' Klicks');
-        }
-
-        // Beim ersten Klick den Timer starten.
-        if (newCount === 1) {
-            var startTime = Date.now();
-            var jTimer = $('.timer');
-            jTimer.data(startTimeDataName, startTime);
-            var timerId = setInterval(function () {
-                var duration = Math.floor((Date.now() - startTime) / 1000);
-                jTimer.text(duration + 's');
-            }, 1000);
-            $gameBoard.data(timerIdDataName, timerId);
-        }
-    };
-
+    /**
+     * Erzeugt aus dem KENOM-Identifier die URL zur KENOM Seite der zugehörigen Münze.
+     */
     var createKenomLinkUrl = function (identifier) {
         return 'http://www.kenom.de/objekt/record_' + identifier + '/1/';
     };
 
+    /**
+     * Erzeugt einen Link zur KENOM-Seite der Münze mit dem identifier.
+     */
     var createCoinLink = function (identifier) {
         var a = document.createElement('a');
         a.setAttribute('href', createKenomLinkUrl(identifier));
         a.setAttribute('target', 'muenzmemory-kenom');
-        a.setAttribute('title', 'Diese Münze auf der KENOM Website vollständig betrachten.')
+        a.setAttribute('title', 'Diese Münze auf der KENOM Website vollständig betrachten.');
         a.appendChild(document.createTextNode('Details …'));
         return a;
     };
 
+    /**
+     * Zeigt Informationen und einen KENOM-Link zur zuletzt gewählten
+     * Münze an.
+     */
     var updateLastSelectionInfo = function () {
         var $lastSelected = $('.' + lastSelectionClass);
         var newText = $lastSelected.length > 0
@@ -251,10 +304,59 @@ $(function () {
     };
 
     /**
+     * Spielgewinn.
+     */
+    var win = function () {
+        clearTimer();
+        $gameBoard.find('.' + lastSelectionClass).removeClass(lastSelectionClass);
+        $gameBoard.addClass(hasWonClass);
+        updateLastSelectionInfo();
+        var newScore = computeScore();
+        showModal(newScore);
+        updateHighscore(newScore);
+    };
+
+    /**
+     * Aktualisierung der bisherigen Klickanzahl.
+     * Startet beim ersten Klick auch den Timer.
+     */
+    var updateClickCount = function (newCount) {
+        $gameBoard.data(moveCountDataName, newCount);
+        var jMoves = $('.moves');
+        if (newCount === 0) {
+            jMoves.text('');
+        } else if (newCount === 1) {
+            jMoves.text(' 1 Klick');
+        } else {
+            jMoves.text(newCount + ' Klicks');
+        }
+
+        // Beim ersten Klick den Timer starten.
+        if (newCount === 1) {
+            var startTime = Date.now();
+            var jTimer = $('.timer');
+            jTimer.data(startTimeDataName, startTime);
+            var timerId = setInterval(function () {
+                var duration = Math.floor((Date.now() - startTime) / 1000);
+                jTimer.text(duration + 's');
+            }, 1000);
+            $gameBoard.data(timerIdDataName, timerId);
+        }
+    };
+
+    /**
      * Click-Event Handler für die Auswahl von Kacheln.
      */
     $gameBoard.on('click', 'li', function (event) {
         var $target = $(event.currentTarget);
+
+        // Geklicktes Element hervorheben.
+        setLastSelection($target);
+
+        // In bereits gewonnenem Spiel Klicks nicht weiter auswerten.
+        if ($gameBoard.hasClass(hasWonClass)) {
+            return;
+        }
 
         // Klicks auf bereits gefundene oder umgedrehte Karte ignorieren.
         if ($target.hasClass(foundClass) || $target.hasClass(peekClass)) {
@@ -273,8 +375,6 @@ $(function () {
         $target
             .addClass(peekClass)
             .attr('title', $target.data(descriptionDataName));
-
-        setLastSelection($target);
 
         // Nach dem Aufdecken aufgedeckte Karten vergleichen und zum Zurückdrehen markieren, bzw fixieren.
         var $newPeek = $gameBoard.find('.' + peekClass);
@@ -301,9 +401,42 @@ $(function () {
     });
 
     /**
+     * Schreibt die aktuellen Einstellungen der Auswahlmenüs und
+     * Checkbox in localStorage.
+     */
+    var saveCurrentSettings = function () {
+        if (_.isObject(localStorage)) {
+            var settings = {
+                'boardSize': JSON.parse($('.sizeSelection').val()),
+                'century': JSON.parse($('.centurySelection').val()),
+                'difficult': $('.difficult').prop('checked')
+            };
+            localStorage.setItem('settings', JSON.stringify(settings));
+        }
+    };
+
+    /**
+     * Stellt die Einstellungen der Auswahlmenüs und Checkbox aus
+     * den in localStorage gespeicherten Werten wieder her.
+     */
+    var restoreSavedSettings = function () {
+        if (_.isObject(localStorage)) {
+            var settingsJSON = localStorage.getItem('settings');
+            if (settingsJSON) {
+                var settings = JSON.parse(settingsJSON);
+                $('.sizeSelection').val(JSON.stringify(settings.boardSize));
+                $('.centurySelection').val(JSON.stringify(settings.century));
+                $('.difficult').prop('checked', settings.difficult);
+            }
+        }
+    };
+
+    /**
      * Brett neu aufbauen und Spielstand zurücksetzen.
      */
     var resetGame = function () {
+        $gameBoard.removeClass(hasWonClass);
+        saveCurrentSettings();
         fillBoard();
         $('#container').show();
         $('.modal').hide();
@@ -319,6 +452,8 @@ $(function () {
         .on('click', '.resetButton, .restartGame, .difficult', resetGame)
     // für Änderungen der Menüauswahl
         .on('change', '.sizeSelection, .centurySelection', resetGame);
+
+    restoreSavedSettings();
 
     /**
      * Münzdaten (asynchron) laden.
