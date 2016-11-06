@@ -441,6 +441,7 @@ $(function () {
         $('#container').show();
         $('.modal').hide();
         updateClickCount(0);
+        updateLastSelectionInfo();
         clearTimer();
     };
 
